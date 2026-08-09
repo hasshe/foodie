@@ -12,7 +12,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
 
-@Route(RouteConstants.ROUTE_MAIN)
+@Route(value = RouteConstants.ROUTE_MAIN, layout = MainLayout.class)
 @PageTitle("Foodie")
 @PermitAll
 public class MainView extends VerticalLayout {
