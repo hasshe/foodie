@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Foodie — Product Features</title>
+  <style>
+    :root {
+      --color-bg: #0f0f0f;
+      --color-surface: #1a1a1a;
+      --color-surface-raised: #242424;
+      --color-border: #2e2e2e;
+      --color-accent: #f97316;
+      --color-accent-dim: rgba(249, 115, 22, 0.12);
+      --color-text: #e8e8e8;
+      --color-text-muted: #888;
+      --color-tag-bg: #2a2a2a;
+      --radius: 10px;
+      --radius-sm: 6px;
+      --font: 'Segoe UI', system-ui, sans-serif;
+      --font-mono: 'Cascadia Code', 'Fira Code', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font);
+      line-height: 1.7;
+      padding: 2rem 1rem 6rem;
+    }
+
+    .page {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* ── Hero ─────────────────────────────────────────── */
+    .hero {
+      text-align: center;
+      padding: 3.5rem 0 2.5rem;
+      border-bottom: 1px solid var(--color-border);
+      margin-bottom: 3rem;
+    }
+
+    .hero-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--color-accent);
+      margin-bottom: 0.75rem;
+    }
+
+    .hero h1 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+
+    .hero h1 span {
+      color: var(--color-accent);
+    }
+
+    .hero p {
+      font-size: 1.05rem;
+      color: var(--color-text-muted);
+      max-width: 580px;
+      margin: 0 auto;
+    }
+
+    /* ── Section ──────────────────────────────────────── */
+    section {
+      margin-bottom: 3rem;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .section-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      background: var(--color-accent-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .section-header h2 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    /* ── Cards ────────────────────────────────────────── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.4rem;
+    }
+
+    .card h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--color-accent);
+      margin-bottom: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .card ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .card ul li {
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+      padding-left: 1rem;
+      position: relative;
+    }
+
+    .card ul li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--color-accent);
+    }
+
+    /* ── Domain model ─────────────────────────────────── */
+    .model-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .model-entity {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 1rem 1.2rem;
+    }
+
+    .model-entity .entity-name {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--color-accent);
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .model-entity ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .model-entity ul li {
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+      font-family: var(--font-mono);
+      padding-left: 0.75rem;
+      position: relative;
+    }
+
+    .model-entity ul li::before {
+      content: '└';
+      position: absolute;
+      left: 0;
+      color: var(--color-border);
+    }
+
+    /* ── Open questions table ─────────────────────────── */
+    .questions-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .questions-table th {
+      text-align: left;
+      padding: 0.6rem 1rem;
+      color: var(--color-text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .questions-table td {
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid var(--color-border);
+      color: var(--color-text-muted);
+      vertical-align: top;
+    }
+
+    .questions-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .questions-table td:first-child {
+      color: var(--color-text);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .questions-table tr:hover td {
+      background: var(--color-surface);
+    }
+
+    .tag {
+      display: inline-block;
+      background: var(--color-tag-bg);
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      padding: 0.15rem 0.5rem;
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .tag--resolved {
+      background: rgba(34, 197, 94, 0.1);
+      border-color: rgba(34, 197, 94, 0.3);
+      color: #4ade80;
+    }
+
+    /* ── Divider ──────────────────────────────────────── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--color-border);
+      margin: 0 0 2.5rem;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-label">Product Specification</div>
+    <h1><span>Foodie</span> — Feature Overview</h1>
+    <p>A social PWA for food lovers. Track restaurants, log meals, rank dishes, and discover the best version of your favourite food across every place you've visited.</p>
+  </div>
+
+  <!-- Users & Social -->
+  <section>
+    <div class="section-header">
+      <div class="section-icon">👤</div>
+      <h2>Users &amp; Social</h2>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <h3>Accounts</h3>
+        <ul>
+          <li>Register and log in</li>
+          <li>Display name, avatar, short bio</li>
+          <li>Spring Security — local accounts only</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Friends</h3>
+        <ul>
+          <li>Search for other users</li>
+          <li>Send / accept / decline friend requests</li>
+          <li>View full friend list</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Groups</h3>
+        <ul>
+          <li>Any user can create a group</li>
+          <li>Add friends as members</li>
+          <li>A user can belong to multiple groups</li>
+          <li>All members can contribute content</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <hr />
+
+  <!-- Restaurants -->
+  <section>
+    <div class="section-header">
+      <div class="section-icon">🍽️</div>
+      <h2>Restaurants</h2>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <h3>Adding</h3>
+        <ul>
+          <li>Any group member can add a restaurant</li>
+          <li>Required: name, address</li>
+          <li>Optional: cuisine type, website, phone</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Map Integration</h3>
+        <ul>
+          <li>Provider: Google Maps API</li>
+          <li>Not included in V1 — future feature</li>
+          <li>Will add address lookup, lat/lng storage, and map pin display</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Ratings</h3>
+        <ul>
+          <li>Scale: 1 (terrible) – 10 (perfection)</li>
+          <li>Each member rates independently</li>
+          <li>Group sees aggregate average per category</li>
+          <li>Employees &amp; Service</li>
+          <li>Audio &amp; Music</li>
+          <li>General Vibes</li>
+          <li>Price for Quality</li>
+          <li>Location &amp; Locale</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <hr />
+
+  <!-- Visits & Food Logs -->
+  <section>
+    <div class="section-header">
+      <div class="section-icon">📋</div>
+      <h2>Visits &amp; Food Logs</h2>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <h3>Logging a Visit</h3>
+        <ul>
+          <li>Date, attendees from the group, notes</li>
+          <li>Co-visits supported — group members join the same visit post</li>
+          <li>Each attending member submits their own ratings independently</li>
+          <li>Visit total score is an aggregate of all members' ratings</li>
+          <li>All ratings visible to every group member</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Food Items</h3>
+        <ul>
+          <li>Log individual dishes per visit</li>
+          <li>Name, description, optional price</li>
+          <li>Assign a dish category (e.g. "Steak")</li>
+          <li>Scale: 1 (terrible) – 10 (perfection)</li>
+          <li>Taste</li>
+          <li>Presentation</li>
+          <li>Portion Quality</li>
+          <li>Value for Price</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Images</h3>
+        <ul>
+          <li>One or more photos per dish</li>
+          <li>JPEG, PNG, WEBP supported</li>
+          <li>Option A: binary data in PostgreSQL</li>
+          <li>Option B: Railway bucket storage</li>
+          <li>Exact solution TBD</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <hr />
+
+  <!-- Wishlists -->
+  <section>
+    <div class="section-header">
+      <div class="section-icon">⭐</div>
+      <h2>Wishlists</h2>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <h3>Group Wishlist</h3>
+        <ul>
+          <li>Any member can add a restaurant</li>
+          <li>Visible to all group members</li>
+          <li>Check off when visited — moves to visited list</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Personal Wishlist</h3>
+        <ul>
+          <li>Private to the individual user</li>
+          <li>Same check-off mechanic</li>
+          <li>Can optionally share with a group later</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Entry Format</h3>
+        <ul>
+          <li>Freeform name + optional address</li>
+          <li>Can link to an existing restaurant in the system</li>
+          <li>isCheckedOff status tracked per item</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <hr />
+
+  <!-- Similar Meals -->
+  <section>
+    <div class="section-header">
+      <div class="section-icon">🥩</div>
+      <h2>Similar Meals — Cross-Restaurant Comparison</h2>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <h3>Dish Category Grouping</h3>
+        <ul>
+          <li>Each food item gets a freeform dish category</li>
+          <li>Categories normalised to lowercase for matching</li>
+          <li>Auto-builds a ranked list per category</li>
+          <li>Spans all restaurants the user or group has visited</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Comparison View</h3>
+        <ul>
+          <li>Shows all logged instances of a dish type</li>
+          <li>Restaurant, date, user, rating, photo thumbnail</li>
+          <li>Sorted by rating descending</li>
+          <li>Filterable by group or personal visits</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Example</h3>
+        <ul>
+          <li>"Steaks" → Steak at Restaurant A: 8.5</li>
+          <li>"Steaks" → Steak at Restaurant B: 7.0</li>
+          <li>Instantly see your best steak in the city</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <hr />
+
+  <!-- Domain Model -->
+  <section>
+    <div class="section-header">
+      <div class="section-icon">🗂️</div>
+      <h2>Domain Model</h2>
+    </div>
+    <div class="model-grid">
+      <div class="model-entity">
+        <div class="entity-name">User</div>
+        <ul>
+          <li>belongs to many Groups</li>
+          <li>has many FriendRequests</li>
+          <li>has a personal Wishlist</li>
+        </ul>
+      </div>
+      <div class="model-entity">
+        <div class="entity-name">Group</div>
+        <ul>
+          <li>has many Users (members)</li>
+          <li>has many Restaurants</li>
+          <li>has a group Wishlist</li>
+        </ul>
+      </div>
+      <div class="model-entity">
+        <div class="entity-name">Restaurant</div>
+        <ul>
+          <li>belongs to one or more Groups</li>
+          <li>has an Address (lat/lng)</li>
+          <li>has many Visits</li>
+          <li>has many RestaurantRatings</li>
+        </ul>
+      </div>
+      <div class="model-entity">
+        <div class="entity-name">Visit</div>
+        <ul>
+          <li>belongs to one Restaurant</li>
+          <li>logged by one User</li>
+          <li>has many FoodItems</li>
+        </ul>
+      </div>
+      <div class="model-entity">
+        <div class="entity-name">FoodItem</div>
+        <ul>
+          <li>belongs to one Visit</li>
+          <li>has a DishCategory</li>
+          <li>has a FoodRating</li>
+          <li>has many Images</li>
+        </ul>
+      </div>
+      <div class="model-entity">
+        <div class="entity-name">WishlistItem</div>
+        <ul>
+          <li>belongs to Group or User</li>
+          <li>optional Restaurant link</li>
+          <li>isCheckedOff boolean</li>
+        </ul>
+      </div>
+      <div class="model-entity">
+        <div class="entity-name">DishCategory</div>
+        <ul>
+          <li>aggregated view across FoodItems</li>
+          <li>matched by normalised name</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <hr />
+
+  <!-- Open Questions -->
+  <section>
+    <div class="section-header">
+      <div class="section-icon">❓</div>
+      <h2>Open Questions</h2>
+    </div>
+    <table class="questions-table">
+      <thead>
+        <tr>
+          <th>Topic</th>
+          <th>Question</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Rating categories</td>
+          <td>
+            All ratings use a 1–10 scale (1 = terrible, 10 = perfection).<br/>
+            <strong>Restaurant:</strong> Employees &amp; Service, Audio &amp; Music, General Vibes, Price for Quality, Location &amp; Locale.<br/>
+            <strong>Food:</strong> Taste, Presentation, Portion Quality, Value for Price.
+          </td>
+          <td><span class="tag tag--resolved">Resolved</span></td>
+        </tr>
+        <tr>
+          <td>Authentication</td>
+          <td>Spring Security with local accounts. No OAuth.</td>
+          <td><span class="tag tag--resolved">Resolved</span></td>
+        </tr>
+        <tr>
+          <td>Image storage</td>
+          <td>Two options under consideration — exact solution not yet decided:<br/>
+            <strong>Option A:</strong> Binary data stored directly in PostgreSQL.<br/>
+            <strong>Option B:</strong> Railway bucket storage (object storage provided by Railway).</td>
+          <td><span class="tag">TBD</span></td>
+        </tr>
+        <tr>
+          <td>Map provider</td>
+          <td>Google Maps API. Not included in V1 — planned as a future feature addition.</td>
+          <td><span class="tag tag--resolved">Resolved</span></td>
+        </tr>
+        <tr>
+          <td>Notifications</td>
+          <td>No push notifications planned.</td>
+          <td><span class="tag tag--resolved">Resolved</span></td>
+        </tr>
+        <tr>
+          <td>Multi-user visits</td>
+          <td>Co-visits are supported. Multiple group members can attach their own ratings to the same visit post. The visit's total score is an aggregate of all participating members' ratings.</td>
+          <td><span class="tag tag--resolved">Resolved</span></td>
+        </tr>
+        <tr>
+          <td>Rating privacy</td>
+          <td>All individual ratings and reviews are visible to every member of the same group. No private ratings.</td>
+          <td><span class="tag tag--resolved">Resolved</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</div>
+</body>
+</html>
