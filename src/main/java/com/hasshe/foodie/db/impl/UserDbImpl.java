@@ -49,4 +49,12 @@ class UserDbImpl implements UserDb {
         log.debug("Checking existence of user with username {}", username);
         return userJpaRepository.existsByUsername(username);
     }
+
+    @Override
+    public boolean existsByUsernameAndIdNot(String username, Long id) {
+        Assert.hasText(username, "username must not be blank");
+        Assert.notNull(id, "id must not be null");
+        log.debug("Checking existence of user with username {} excluding id {}", username, id);
+        return userJpaRepository.existsByUsernameAndIdNot(username, id);
+    }
 }

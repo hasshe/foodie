@@ -6,6 +6,7 @@ public record UserDomain(
         Long id,
         String username,
         String displayName,
+        UserIconDomain userIcon,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {}

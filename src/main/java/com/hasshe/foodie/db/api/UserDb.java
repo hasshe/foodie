@@ -13,4 +13,6 @@ public interface UserDb {
     Optional<UserEntity> findByUsername(String username);
 
     boolean existsByUsername(String username);
+
+    boolean existsByUsernameAndIdNot(String username, Long id);
 }

@@ -104,4 +104,84 @@ class UserEntityTest {
         assertThatThrownBy(() -> entity.changeDisplayName(null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    void given_validNewUsername_when_changeUsername_then_usernameIsUpdated() {
+        UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
+
+        entity.changeUsername("chefmaster");
+
+        assertThat(entity.getUsername()).isEqualTo("chefmaster");
+    }
+
+    @Test
+    void given_anotherValidNewUsername_when_changeUsername_then_usernameIsUpdated() {
+        UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
+
+        entity.changeUsername("foodie99");
+
+        assertThat(entity.getUsername()).isEqualTo("foodie99");
+    }
+
+    @Test
+    void given_blankUsername_when_changeUsername_then_throwsIllegalArgumentException() {
+        UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
+
+        assertThatThrownBy(() -> entity.changeUsername("   "))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void given_noIconSet_when_getUserIcon_then_returnsEmptyOptional() {
+        UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
+
+        assertThat(entity.getUserIcon()).isEmpty();
+    }
+
+    @Test
+    void given_validIcon_when_changeUserIcon_then_getUserIconReturnsIt() {
+        UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
+        UserIconEntity iconEntity = new UserIconEntity("STAR", "Star");
+
+        entity.changeUserIcon(iconEntity);
+
+        assertThat(entity.getUserIcon()).contains(iconEntity);
+    }
+
+    @Test
+    void given_anotherValidIcon_when_changeUserIcon_then_getUserIconReturnsIt() {
+        UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
+        UserIconEntity iconEntity = new UserIconEntity("HEART", "Heart");
+
+        entity.changeUserIcon(iconEntity);
+
+        assertThat(entity.getUserIcon()).contains(iconEntity);
+    }
+
+    @Test
+    void given_nullIcon_when_changeUserIcon_then_throwsIllegalArgumentException() {
+        UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
+
+        assertThatThrownBy(() -> entity.changeUserIcon(null))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void given_iconPreviouslySet_when_clearUserIcon_then_getUserIconReturnsEmptyOptional() {
+        UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
+        entity.changeUserIcon(new UserIconEntity("STAR", "Star"));
+
+        entity.clearUserIcon();
+
+        assertThat(entity.getUserIcon()).isEmpty();
+    }
+
+    @Test
+    void given_noIconSet_when_clearUserIcon_then_getUserIconStaysEmpty() {
+        UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
+
+        entity.clearUserIcon();
+
+        assertThat(entity.getUserIcon()).isEmpty();
+    }
 }

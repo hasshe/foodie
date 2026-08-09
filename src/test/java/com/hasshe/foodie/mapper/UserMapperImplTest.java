@@ -2,7 +2,10 @@ package com.hasshe.foodie.mapper;
 
 import com.hasshe.foodie.constants.UserConstants;
 import com.hasshe.foodie.db.entity.UserEntity;
+import com.hasshe.foodie.db.entity.UserIconEntity;
 import com.hasshe.foodie.domain.UserDomain;
+import com.hasshe.foodie.domain.UserIconDomain;
+import com.hasshe.foodie.dto.UserProfileDisplay;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -10,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class UserMapperImplTest {
 
-    private final UserMapperImpl userMapperImpl = new UserMapperImpl();
+    private final UserMapperImpl userMapperImpl = new UserMapperImpl(new UserIconMapperImpl());
 
     @Test
     void given_validEntity_when_mapToDomain_then_returnsMatchingDomain() {
@@ -55,5 +58,52 @@ class UserMapperImplTest {
         UserDomain domain = userMapperImpl.mapToDomain(entity);
 
         assertThat(domain.username()).isEqualTo(maxLengthUsername);
+    }
+
+    @Test
+    void given_entityWithIcon_when_mapToDomain_then_domainHasMappedIcon() {
+        UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
+        entity.changeUserIcon(new UserIconEntity("STAR", "Star"));
+
+        UserDomain domain = userMapperImpl.mapToDomain(entity);
+
+        assertThat(domain.userIcon()).isNotNull();
+        assertThat(domain.userIcon().iconKey()).isEqualTo("STAR");
+    }
+
+    @Test
+    void given_entityWithoutIcon_when_mapToDomain_then_domainHasNullIcon() {
+        UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
+
+        UserDomain domain = userMapperImpl.mapToDomain(entity);
+
+        assertThat(domain.userIcon()).isNull();
+    }
+
+    @Test
+    void given_domainWithIcon_when_mapToDisplay_then_returnsMatchingDisplay() {
+        UserIconDomain iconDomain = new UserIconDomain(1L, "STAR", "Star");
+        UserDomain domain = new UserDomain(1L, "chef123", "Chef", iconDomain, null, null);
+
+        UserProfileDisplay display = userMapperImpl.mapToDisplay(domain);
+
+        assertThat(display.username()).isEqualTo("chef123");
+        assertThat(display.displayName()).isEqualTo("Chef");
+        assertThat(display.userIcon().iconKey()).isEqualTo("STAR");
+    }
+
+    @Test
+    void given_domainWithoutIcon_when_mapToDisplay_then_displayHasNullIcon() {
+        UserDomain domain = new UserDomain(1L, "chef123", "Chef", null, null, null);
+
+        UserProfileDisplay display = userMapperImpl.mapToDisplay(domain);
+
+        assertThat(display.userIcon()).isNull();
+    }
+
+    @Test
+    void given_nullDomain_when_mapToDisplay_then_throwsIllegalArgumentException() {
+        assertThatThrownBy(() -> userMapperImpl.mapToDisplay(null))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }

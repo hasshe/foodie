@@ -3,15 +3,19 @@ package com.hasshe.foodie.db.entity;
 import com.hasshe.foodie.constants.UserConstants;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.springframework.util.Assert;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Entity
 @Table(name = UserConstants.TABLE_USERS)
@@ -36,6 +40,10 @@ public class UserEntity {
 
     @Column(name = UserConstants.COLUMN_UPDATED_AT, nullable = false)
     private LocalDateTime updatedAt;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = UserConstants.COLUMN_USER_ICON_ID)
+    private UserIconEntity userIcon;
 
     protected UserEntity() {}
 
@@ -84,6 +92,15 @@ public class UserEntity {
         return updatedAt;
     }
 
+    public Optional<UserIconEntity> getUserIcon() {
+        return Optional.ofNullable(userIcon);
+    }
+
+    public void changeUsername(String newUsername) {
+        Assert.hasText(newUsername, "newUsername must not be blank");
+        this.username = newUsername;
+    }
+
     public void changePassword(String newPassword) {
         Assert.hasText(newPassword, "newPassword must not be blank");
         this.password = newPassword;
@@ -92,5 +109,14 @@ public class UserEntity {
     public void changeDisplayName(String newDisplayName) {
         Assert.hasText(newDisplayName, "newDisplayName must not be blank");
         this.displayName = newDisplayName;
+    }
+
+    public void changeUserIcon(UserIconEntity newUserIcon) {
+        Assert.notNull(newUserIcon, "newUserIcon must not be null");
+        this.userIcon = newUserIcon;
+    }
+
+    public void clearUserIcon() {
+        this.userIcon = null;
     }
 }

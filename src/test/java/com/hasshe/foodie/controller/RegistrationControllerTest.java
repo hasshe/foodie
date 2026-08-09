@@ -30,7 +30,7 @@ class RegistrationControllerTest {
     @Test
     void given_validDisplay_when_registerUser_then_returnsServiceResult() {
         RegisterUserDisplay request = new RegisterUserDisplay("chef123", "rawPassword", "Chef");
-        UserDomain expected = new UserDomain(1L, "chef123", "Chef", LocalDateTime.now(), LocalDateTime.now());
+        UserDomain expected = new UserDomain(1L, "chef123", "Chef", null, LocalDateTime.now(), LocalDateTime.now());
         when(userService.registerUser(request)).thenReturn(expected);
 
         UserDomain result = registrationController.registerUser(request);
@@ -41,7 +41,7 @@ class RegistrationControllerTest {
     @Test
     void given_anotherValidDisplay_when_registerUser_then_returnsServiceResult() {
         RegisterUserDisplay request = new RegisterUserDisplay("foodie99", "rawPassword", "Foodie");
-        UserDomain expected = new UserDomain(2L, "foodie99", "Foodie", LocalDateTime.now(), LocalDateTime.now());
+        UserDomain expected = new UserDomain(2L, "foodie99", "Foodie", null, LocalDateTime.now(), LocalDateTime.now());
         when(userService.registerUser(request)).thenReturn(expected);
 
         UserDomain result = registrationController.registerUser(request);
@@ -67,7 +67,7 @@ class RegistrationControllerTest {
     @Test
     void given_validDisplay_when_registerUser_then_callsServiceExactlyOnce() {
         RegisterUserDisplay request = new RegisterUserDisplay("chef123", "rawPassword", "Chef");
-        UserDomain expected = new UserDomain(1L, "chef123", "Chef", LocalDateTime.now(), LocalDateTime.now());
+        UserDomain expected = new UserDomain(1L, "chef123", "Chef", null, LocalDateTime.now(), LocalDateTime.now());
         when(userService.registerUser(request)).thenReturn(expected);
 
         registrationController.registerUser(request);
