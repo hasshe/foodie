@@ -1,6 +1,7 @@
 package com.hasshe.foodie.views;
 
 import com.hasshe.foodie.constants.RouteConstants;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.login.LoginForm;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
@@ -26,7 +27,9 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
         loginForm.setAction(RouteConstants.ROUTE_LOGIN);
 
-        add(new H1("Foodie"), loginForm);
+        Anchor registerLink = new Anchor(RouteConstants.ROUTE_REGISTER, "Don't have an account? Register");
+
+        add(new H1("Foodie"), loginForm, registerLink);
     }
 
     @Override

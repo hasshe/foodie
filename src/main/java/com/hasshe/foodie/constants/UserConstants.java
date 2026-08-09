@@ -14,6 +14,7 @@ public final class UserConstants {
     public static final String COLUMN_UPDATED_AT = "updated_at";
 
     public static final int USERNAME_MAX_LENGTH = 50;
+    public static final int PASSWORD_MIN_LENGTH = 8;
     public static final int PASSWORD_MAX_LENGTH = 255;
     public static final int DISPLAY_NAME_MAX_LENGTH = 100;
 }
