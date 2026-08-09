@@ -1,58 +1,65 @@
 /* ── Foodie app-level custom properties ───────────────────────── */
-html {
-  --foodie-color-bg:           #0f0f0f;
-  --foodie-color-surface:      #1a1a1a;
+html,
+html[theme~="dark"] {
+  --foodie-color-bg:             #0f0f0f;
+  --foodie-color-surface:        #1a1a1a;
   --foodie-color-surface-raised: #242424;
-  --foodie-color-border:       #2e2e2e;
-  --foodie-color-accent:       #f97316;
-  --foodie-color-accent-dim:   rgba(249, 115, 22, 0.12);
-  --foodie-color-text:         #e8e8e8;
-  --foodie-color-text-muted:   #888888;
-  --foodie-radius:             10px;
-  --foodie-radius-sm:          6px;
+  --foodie-color-border:         #2e2e2e;
+  --foodie-color-accent:         #f97316;
+  --foodie-color-accent-dim:     rgba(249, 115, 22, 0.12);
+  --foodie-color-text:           #e8e8e8;
+  --foodie-color-text-muted:     #888888;
+  --foodie-radius:               10px;
+  --foodie-radius-sm:            6px;
 }
 
 /* ── Lumo variable overrides ──────────────────────────────────── */
-html {
-  --lumo-base-color:              #0f0f0f;
+html,
+html[theme~="dark"] {
+  --lumo-base-color:             #0f0f0f;
 
-  --lumo-primary-color:           #f97316;
-  --lumo-primary-color-50pct:     rgba(249, 115, 22, 0.5);
-  --lumo-primary-color-10pct:     rgba(249, 115, 22, 0.12);
-  --lumo-primary-text-color:      #f97316;
-  --lumo-primary-contrast-color:  #ffffff;
+  --lumo-primary-color:          #f97316;
+  --lumo-primary-color-50pct:    rgba(249, 115, 22, 0.5);
+  --lumo-primary-color-10pct:    rgba(249, 115, 22, 0.12);
+  --lumo-primary-text-color:     #f97316;
+  --lumo-primary-contrast-color: #ffffff;
 
-  --lumo-body-text-color:         #e8e8e8;
-  --lumo-secondary-text-color:    #888888;
-  --lumo-disabled-text-color:     #555555;
-  --lumo-header-text-color:       #e8e8e8;
+  --lumo-body-text-color:        #e8e8e8;
+  --lumo-secondary-text-color:   #888888;
+  --lumo-disabled-text-color:    #555555;
+  --lumo-header-text-color:      #e8e8e8;
 
-  --lumo-contrast-5pct:           #1a1a1a;
-  --lumo-contrast-10pct:          #242424;
-  --lumo-contrast-20pct:          #2e2e2e;
-  --lumo-contrast-30pct:          #3a3a3a;
-  --lumo-contrast-40pct:          #4a4a4a;
-  --lumo-contrast-50pct:          #606060;
-  --lumo-contrast-60pct:          #787878;
-  --lumo-contrast-70pct:          #909090;
-  --lumo-contrast-80pct:          #aaaaaa;
-  --lumo-contrast-90pct:          #cccccc;
+  --lumo-contrast-5pct:          #1a1a1a;
+  --lumo-contrast-10pct:         #242424;
+  --lumo-contrast-20pct:         #2e2e2e;
+  --lumo-contrast-30pct:         #3a3a3a;
+  --lumo-contrast-40pct:         #4a4a4a;
+  --lumo-contrast-50pct:         #606060;
+  --lumo-contrast-60pct:         #787878;
+  --lumo-contrast-70pct:         #909090;
+  --lumo-contrast-80pct:         #aaaaaa;
+  --lumo-contrast-90pct:         #cccccc;
 
-  --lumo-shade-5pct:              rgba(255, 255, 255, 0.03);
-  --lumo-shade-10pct:             rgba(255, 255, 255, 0.06);
-  --lumo-shade-20pct:             rgba(255, 255, 255, 0.10);
-  --lumo-shade-50pct:             rgba(255, 255, 255, 0.25);
-  --lumo-shade-90pct:             rgba(255, 255, 255, 0.60);
+  --lumo-shade-5pct:             rgba(255, 255, 255, 0.03);
+  --lumo-shade-10pct:            rgba(255, 255, 255, 0.06);
+  --lumo-shade-20pct:            rgba(255, 255, 255, 0.10);
+  --lumo-shade-50pct:            rgba(255, 255, 255, 0.25);
+  --lumo-shade-90pct:            rgba(255, 255, 255, 0.60);
 
-  --lumo-tint-5pct:               rgba(255, 255, 255, 0.03);
-  --lumo-tint-10pct:              rgba(255, 255, 255, 0.06);
-  --lumo-tint-20pct:              rgba(255, 255, 255, 0.10);
-  --lumo-tint-50pct:              rgba(255, 255, 255, 0.25);
-  --lumo-tint-90pct:              rgba(255, 255, 255, 0.60);
+  --lumo-tint-5pct:              rgba(255, 255, 255, 0.03);
+  --lumo-tint-10pct:             rgba(255, 255, 255, 0.06);
+  --lumo-tint-20pct:             rgba(255, 255, 255, 0.10);
+  --lumo-tint-50pct:             rgba(255, 255, 255, 0.25);
+  --lumo-tint-90pct:             rgba(255, 255, 255, 0.60);
 
-  --lumo-border-radius-s:         6px;
-  --lumo-border-radius-m:         10px;
-  --lumo-border-radius-l:         14px;
+  --lumo-border-radius-s:        6px;
+  --lumo-border-radius-m:        10px;
+  --lumo-border-radius-l:        14px;
 
-  --lumo-font-family:             'Segoe UI', system-ui, sans-serif;
+  --lumo-font-family:            'Segoe UI', system-ui, sans-serif;
+}
+
+/* ── Page background ──────────────────────────────────────────── */
+body {
+  background-color: var(--foodie-color-bg);
 }
