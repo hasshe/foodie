@@ -19,7 +19,7 @@ class RestaurantMapperImplTest {
         GroupEntity group = new GroupEntity("Foodies");
         RestaurantEntity entity = new RestaurantEntity("The Diner", "123 Main St", group, "American", "https://diner.example", "555-1234");
 
-        RestaurantDomain domain = restaurantMapperImpl.mapToDomain(entity);
+        RestaurantDomain domain = restaurantMapperImpl.mapToDomain(entity, 75.0, 3);
 
         assertThat(domain.name()).isEqualTo("The Diner");
         assertThat(domain.address()).isEqualTo("123 Main St");
@@ -27,6 +27,8 @@ class RestaurantMapperImplTest {
         assertThat(domain.website()).isEqualTo("https://diner.example");
         assertThat(domain.phone()).isEqualTo("555-1234");
         assertThat(domain.group().name()).isEqualTo("Foodies");
+        assertThat(domain.averageRating()).isEqualTo(75.0);
+        assertThat(domain.ratingCount()).isEqualTo(3);
     }
 
     @Test
@@ -34,7 +36,7 @@ class RestaurantMapperImplTest {
         GroupEntity group = new GroupEntity("Foodies");
         RestaurantEntity entity = new RestaurantEntity("The Diner", "123 Main St", group, null, null, null);
 
-        RestaurantDomain domain = restaurantMapperImpl.mapToDomain(entity);
+        RestaurantDomain domain = restaurantMapperImpl.mapToDomain(entity, 0.0, 0);
 
         assertThat(domain.cuisineType()).isNull();
         assertThat(domain.website()).isNull();
@@ -43,29 +45,27 @@ class RestaurantMapperImplTest {
 
     @Test
     void given_nullEntity_when_mapToDomain_then_throwsIllegalArgumentException() {
-        assertThatThrownBy(() -> restaurantMapperImpl.mapToDomain(null))
+        assertThatThrownBy(() -> restaurantMapperImpl.mapToDomain(null, 0.0, 0))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void given_validDomain_when_mapToDisplay_then_returnsMatchingDisplay() {
         GroupDomain groupDomain = new GroupDomain(1L, "Foodies", null, null);
-        RestaurantDomain domain = new RestaurantDomain(
-                1L, "The Diner", "123 Main St", "American", "https://diner.example", "555-1234", groupDomain, null, null
-        );
+        RestaurantDomain domain = new RestaurantDomain(1L, "The Diner", "123 Main St", "American", "https://diner.example", "555-1234", groupDomain, 75.0, 3, null, null);
 
         RestaurantDisplay display = restaurantMapperImpl.mapToDisplay(domain);
 
         assertThat(display.name()).isEqualTo("The Diner");
         assertThat(display.groupName()).isEqualTo("Foodies");
+        assertThat(display.averageRating()).isEqualTo(75.0);
+        assertThat(display.ratingCount()).isEqualTo(3);
     }
 
     @Test
     void given_anotherValidDomain_when_mapToDisplay_then_returnsMatchingDisplay() {
         GroupDomain groupDomain = new GroupDomain(2L, "Weekend Warriors", null, null);
-        RestaurantDomain domain = new RestaurantDomain(
-                2L, "Pizza Place", "456 Oak Ave", null, null, null, groupDomain, null, null
-        );
+        RestaurantDomain domain = new RestaurantDomain(2L, "Pizza Place", "456 Oak Ave", null, null, null, groupDomain, 0.0, 0, null, null);
 
         RestaurantDisplay display = restaurantMapperImpl.mapToDisplay(domain);
 

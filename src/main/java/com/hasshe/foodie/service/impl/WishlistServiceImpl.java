@@ -63,7 +63,7 @@ class WishlistServiceImpl implements WishlistService {
         );
         RestaurantEntity savedRestaurantEntity = restaurantDb.save(restaurantEntity);
 
-        RestaurantDomain restaurantDomain = restaurantMapper.mapToDomain(savedRestaurantEntity);
+        RestaurantDomain restaurantDomain = restaurantMapper.mapToDomain(savedRestaurantEntity, 0.0, 0);
         assert restaurantDomain != null : "mapper must never return null";
         log.info("Added restaurant '{}' with id {} to wishlist for group {}", restaurantDomain.name(), restaurantDomain.id(), groupEntity.getId());
         return restaurantDomain;
@@ -81,7 +81,9 @@ class WishlistServiceImpl implements WishlistService {
         if (groupIds.isEmpty()) {
             return List.of();
         }
-        return restaurantDb.findByGroupIdInAndWishlist(groupIds, true).stream().map(restaurantMapper::mapToDomain).toList();
+        return restaurantDb.findByGroupIdInAndWishlist(groupIds, true).stream()
+                .map(restaurantEntity -> restaurantMapper.mapToDomain(restaurantEntity, 0.0, 0))
+                .toList();
     }
 
     @Override
@@ -102,7 +104,7 @@ class WishlistServiceImpl implements WishlistService {
         restaurantEntity.markVisited();
         RestaurantEntity savedRestaurantEntity = restaurantDb.save(restaurantEntity);
 
-        RestaurantDomain restaurantDomain = restaurantMapper.mapToDomain(savedRestaurantEntity);
+        RestaurantDomain restaurantDomain = restaurantMapper.mapToDomain(savedRestaurantEntity, 0.0, 0);
         assert restaurantDomain != null : "mapper must never return null";
         log.info("Checked off restaurant '{}' with id {} from wishlist", restaurantDomain.name(), restaurantDomain.id());
         return restaurantDomain;

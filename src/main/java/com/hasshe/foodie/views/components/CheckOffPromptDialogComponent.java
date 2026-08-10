@@ -38,8 +38,7 @@ public class CheckOffPromptDialogComponent {
             dialog.close();
             rateLaterListener.onRateLater();
         });
-        Button cancelButton = new Button("Cancel", event -> dialog.close());
-        HorizontalLayout buttons = new HorizontalLayout(rateNowButton, rateLaterButton, cancelButton);
+        HorizontalLayout buttons = new HorizontalLayout(rateNowButton, rateLaterButton);
         buttons.setWidthFull();
         buttons.getStyle().set("flex-wrap", "wrap");
 

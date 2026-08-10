@@ -26,7 +26,7 @@ class RestaurantE2ETest extends AbstractFoodieE2ETest {
         goToRestaurants();
 
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add restaurant")).click();
-        assertThat(page.getByLabel("Group")).containsText("Foodies");
+        assertThat(page.locator("vaadin-dialog-overlay").getByLabel("Group")).containsText("Foodies");
 
         page.getByLabel("Name").fill("The Diner");
         page.getByLabel("Address").fill("123 Main St");
@@ -58,9 +58,9 @@ class RestaurantE2ETest extends AbstractFoodieE2ETest {
         goToRestaurants();
 
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add restaurant")).click();
-        assertThat(page.getByLabel("Group")).containsText("Foodies");
+        assertThat(page.locator("vaadin-dialog-overlay").getByLabel("Group")).containsText("Foodies");
 
-        page.getByLabel("Group").click();
+        page.locator("vaadin-dialog-overlay").getByLabel("Group").click();
         page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName("Weekend Warriors")).click();
 
         page.getByLabel("Name").fill("Pizza Place");

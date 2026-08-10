@@ -101,6 +101,20 @@ class RestaurantRatingE2ETest extends AbstractFoodieE2ETest {
     }
 
     @Test
+    void given_ratingSavedAndDialogClosed_when_viewingGridBehindDialog_then_gridShowsUpdatedRatingImmediately() {
+        registerAndLogin("rateuser5");
+        createGroup("Foodies");
+        addRestaurant("The Diner", "123 Main St");
+
+        openRestaurant("The Diner");
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Save rating")).click();
+        assertThat(page.getByText("Rating saved.")).isVisible();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Close")).click();
+
+        assertThat(page.getByRole(AriaRole.GRIDCELL, new Page.GetByRoleOptions().setName("50.0"))).isVisible();
+    }
+
+    @Test
     void given_restaurantWithNoFoodItems_when_openingFoodItems_then_ratingSlidersAreShownAndAddingOneShowsItInListWithAverageRating() {
         registerAndLogin("fooditemuser1");
         createGroup("Foodies");
@@ -109,7 +123,7 @@ class RestaurantRatingE2ETest extends AbstractFoodieE2ETest {
         openRestaurantFoodItems("The Diner");
 
         assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Food items"))).isVisible();
-        assertThat(page.getByText("Rating", new Page.GetByTextOptions().setExact(true))).isVisible();
+        assertThat(page.locator("vaadin-dialog-overlay").getByText("Rating", new Locator.GetByTextOptions().setExact(true))).isVisible();
         assertThat(page.locator("input[type=range]:visible")).hasCount(1);
 
         page.getByLabel("Name").fill("Ribeye Steak");

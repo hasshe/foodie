@@ -34,8 +34,8 @@ class WishlistControllerTest {
     @Test
     void given_validRequest_when_addToWishlist_then_returnsMappedDisplay() {
         AddRestaurantDisplay request = new AddRestaurantDisplay("The Diner", "123 Main St", null, null, null, 1L);
-        RestaurantDomain domain = new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, null, null);
-        RestaurantDisplay display = new RestaurantDisplay(1L, "The Diner", "123 Main St", null, null, null, "Foodies");
+        RestaurantDomain domain = new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, 0.0, 0, null, null);
+        RestaurantDisplay display = new RestaurantDisplay(1L, "The Diner", "123 Main St", null, null, null, "Foodies", 0.0, 0);
         when(wishlistService.addToWishlist("chef123", request)).thenReturn(domain);
         when(restaurantMapper.mapToDisplay(domain)).thenReturn(display);
 
@@ -47,10 +47,10 @@ class WishlistControllerTest {
     @Test
     void given_validRequest_when_addToWishlist_then_delegatesToServiceExactlyOnce() {
         AddRestaurantDisplay request = new AddRestaurantDisplay("The Diner", "123 Main St", null, null, null, 1L);
-        RestaurantDomain domain = new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, null, null);
+        RestaurantDomain domain = new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, 0.0, 0, null, null);
         when(wishlistService.addToWishlist("chef123", request)).thenReturn(domain);
         when(restaurantMapper.mapToDisplay(domain)).thenReturn(
-                new RestaurantDisplay(1L, "The Diner", "123 Main St", null, null, null, "Foodies"));
+                new RestaurantDisplay(1L, "The Diner", "123 Main St", null, null, null, "Foodies", 0.0, 0));
 
         wishlistController.addToWishlist("chef123", request);
 
@@ -83,8 +83,8 @@ class WishlistControllerTest {
 
     @Test
     void given_wishlistItems_when_listWishlistForUser_then_returnsMappedDisplays() {
-        RestaurantDomain domain = new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, null, null);
-        RestaurantDisplay display = new RestaurantDisplay(1L, "The Diner", "123 Main St", null, null, null, "Foodies");
+        RestaurantDomain domain = new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, 0.0, 0, null, null);
+        RestaurantDisplay display = new RestaurantDisplay(1L, "The Diner", "123 Main St", null, null, null, "Foodies", 0.0, 0);
         when(wishlistService.listWishlistForUser("chef123")).thenReturn(List.of(domain));
         when(restaurantMapper.mapToDisplay(domain)).thenReturn(display);
 
@@ -110,8 +110,8 @@ class WishlistControllerTest {
 
     @Test
     void given_validRequest_when_checkOffWishlistItem_then_returnsMappedDisplay() {
-        RestaurantDomain domain = new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, null, null);
-        RestaurantDisplay display = new RestaurantDisplay(1L, "The Diner", "123 Main St", null, null, null, "Foodies");
+        RestaurantDomain domain = new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, 0.0, 0, null, null);
+        RestaurantDisplay display = new RestaurantDisplay(1L, "The Diner", "123 Main St", null, null, null, "Foodies", 0.0, 0);
         when(wishlistService.checkOffWishlistItem("chef123", 1L)).thenReturn(domain);
         when(restaurantMapper.mapToDisplay(domain)).thenReturn(display);
 
@@ -122,10 +122,10 @@ class WishlistControllerTest {
 
     @Test
     void given_validRequest_when_checkOffWishlistItem_then_delegatesToServiceExactlyOnce() {
-        RestaurantDomain domain = new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, null, null);
+        RestaurantDomain domain = new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, 0.0, 0, null, null);
         when(wishlistService.checkOffWishlistItem("chef123", 1L)).thenReturn(domain);
         when(restaurantMapper.mapToDisplay(domain)).thenReturn(
-                new RestaurantDisplay(1L, "The Diner", "123 Main St", null, null, null, "Foodies"));
+                new RestaurantDisplay(1L, "The Diner", "123 Main St", null, null, null, "Foodies", 0.0, 0));
 
         wishlistController.checkOffWishlistItem("chef123", 1L);
 

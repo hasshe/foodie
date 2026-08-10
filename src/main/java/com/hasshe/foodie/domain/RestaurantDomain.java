@@ -10,6 +10,8 @@ public record RestaurantDomain(
         String website,
         String phone,
         GroupDomain group,
+        double averageRating,
+        int ratingCount,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {}

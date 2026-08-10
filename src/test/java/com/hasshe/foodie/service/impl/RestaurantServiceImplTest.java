@@ -2,9 +2,11 @@ package com.hasshe.foodie.service.impl;
 
 import com.hasshe.foodie.db.api.GroupDb;
 import com.hasshe.foodie.db.api.RestaurantDb;
+import com.hasshe.foodie.db.api.RestaurantRatingDb;
 import com.hasshe.foodie.db.api.UserDb;
 import com.hasshe.foodie.db.entity.GroupEntity;
 import com.hasshe.foodie.db.entity.RestaurantEntity;
+import com.hasshe.foodie.db.entity.RestaurantRatingEntity;
 import com.hasshe.foodie.db.entity.UserEntity;
 import com.hasshe.foodie.domain.GroupDomain;
 import com.hasshe.foodie.domain.RestaurantDomain;
@@ -26,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -36,6 +39,9 @@ class RestaurantServiceImplTest {
 
     @Mock
     private RestaurantDb restaurantDb;
+
+    @Mock
+    private RestaurantRatingDb restaurantRatingDb;
 
     @Mock
     private GroupDb groupDb;
@@ -54,14 +60,14 @@ class RestaurantServiceImplTest {
         UserEntity user = new UserEntity("chef123", "hashedPassword", "Chef");
         GroupEntity group = new GroupEntity("Foodies");
         RestaurantEntity savedEntity = new RestaurantEntity("The Diner", "123 Main St", group, null, null, null);
-        RestaurantDomain expected = new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, null, null);
+        RestaurantDomain expected = new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, 0.0, 0, null, null);
         AddRestaurantDisplay request = new AddRestaurantDisplay("The Diner", "123 Main St", null, null, null, 1L);
 
         when(userDb.findByUsername("chef123")).thenReturn(Optional.of(user));
         when(groupDb.findById(1L)).thenReturn(Optional.of(group));
         when(groupDb.isMember(1L, user.getId())).thenReturn(true);
         when(restaurantDb.save(any(RestaurantEntity.class))).thenReturn(savedEntity);
-        when(restaurantMapper.mapToDomain(savedEntity)).thenReturn(expected);
+        when(restaurantMapper.mapToDomain(savedEntity, 0.0, 0)).thenReturn(expected);
 
         RestaurantDomain result = restaurantServiceImpl.addRestaurant("chef123", request);
 
@@ -79,8 +85,8 @@ class RestaurantServiceImplTest {
         when(groupDb.findById(1L)).thenReturn(Optional.of(group));
         when(groupDb.isMember(1L, user.getId())).thenReturn(true);
         when(restaurantDb.save(any(RestaurantEntity.class))).thenReturn(savedEntity);
-        when(restaurantMapper.mapToDomain(savedEntity)).thenReturn(
-                new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, null, null));
+        when(restaurantMapper.mapToDomain(savedEntity, 0.0, 0)).thenReturn(
+                new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, 0.0, 0, null, null));
 
         restaurantServiceImpl.addRestaurant("chef123", request);
 
@@ -136,9 +142,7 @@ class RestaurantServiceImplTest {
         RestaurantEntity savedEntity = new RestaurantEntity(
                 "The Diner", "123 Main St", group, "American", "https://diner.example", "555-1234"
         );
-        RestaurantDomain expected = new RestaurantDomain(
-                1L, "The Diner", "123 Main St", "American", "https://diner.example", "555-1234", null, null, null
-        );
+        RestaurantDomain expected = new RestaurantDomain(1L, "The Diner", "123 Main St", "American", "https://diner.example", "555-1234", null, 0.0, 0, null, null);
         AddRestaurantDisplay request = new AddRestaurantDisplay(
                 "The Diner", "123 Main St", "American", "https://diner.example", "555-1234", 1L
         );
@@ -147,7 +151,7 @@ class RestaurantServiceImplTest {
         when(groupDb.findById(1L)).thenReturn(Optional.of(group));
         when(groupDb.isMember(1L, user.getId())).thenReturn(true);
         when(restaurantDb.save(any(RestaurantEntity.class))).thenReturn(savedEntity);
-        when(restaurantMapper.mapToDomain(savedEntity)).thenReturn(expected);
+        when(restaurantMapper.mapToDomain(savedEntity, 0.0, 0)).thenReturn(expected);
 
         RestaurantDomain result = restaurantServiceImpl.addRestaurant("chef123", request);
 
@@ -155,18 +159,37 @@ class RestaurantServiceImplTest {
     }
 
     @Test
-    void given_userWithGroupsAndRestaurants_when_listRestaurantsForUser_then_returnsMappedRestaurants() {
+    void given_userWithGroupsAndUnratedRestaurants_when_listRestaurantsForUser_then_returnsMappedRestaurants() {
         UserEntity user = new UserEntity("chef123", "hashedPassword", "Chef");
         GroupEntity group = new GroupEntity("Foodies");
         RestaurantEntity restaurantEntity = new RestaurantEntity("The Diner", "123 Main St", group, null, null, null);
-        RestaurantDomain restaurantDomain = new RestaurantDomain(
-                1L, "The Diner", "123 Main St", null, null, null, null, null, null
-        );
+        RestaurantDomain restaurantDomain = new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, 0.0, 0, null, null);
 
         when(userDb.findByUsername("chef123")).thenReturn(Optional.of(user));
         when(groupDb.findByMemberId(user.getId())).thenReturn(List.of(group));
         when(restaurantDb.findByGroupIdInAndWishlist(Collections.singletonList(group.getId()), false)).thenReturn(List.of(restaurantEntity));
-        when(restaurantMapper.mapToDomain(restaurantEntity)).thenReturn(restaurantDomain);
+        when(restaurantRatingDb.findByRestaurantId(restaurantEntity.getId())).thenReturn(List.of());
+        when(restaurantMapper.mapToDomain(restaurantEntity, 0.0, 0)).thenReturn(restaurantDomain);
+
+        List<RestaurantDomain> result = restaurantServiceImpl.listRestaurantsForUser("chef123");
+
+        assertThat(result).containsExactly(restaurantDomain);
+    }
+
+    @Test
+    void given_userWithRatedRestaurant_when_listRestaurantsForUser_then_returnsRestaurantWithAverageRating() {
+        UserEntity user = new UserEntity("chef123", "hashedPassword", "Chef");
+        UserEntity rater = new UserEntity("foodie99", "hashedPassword", "Foodie");
+        GroupEntity group = new GroupEntity("Foodies");
+        RestaurantEntity restaurantEntity = new RestaurantEntity("The Diner", "123 Main St", group, null, null, null);
+        RestaurantRatingEntity rating = new RestaurantRatingEntity(restaurantEntity, rater, 90, 90, 90);
+        RestaurantDomain restaurantDomain = new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, 90.0, 1, null, null);
+
+        when(userDb.findByUsername("chef123")).thenReturn(Optional.of(user));
+        when(groupDb.findByMemberId(user.getId())).thenReturn(List.of(group));
+        when(restaurantDb.findByGroupIdInAndWishlist(Collections.singletonList(group.getId()), false)).thenReturn(List.of(restaurantEntity));
+        when(restaurantRatingDb.findByRestaurantId(restaurantEntity.getId())).thenReturn(List.of(rating));
+        when(restaurantMapper.mapToDomain(eq(restaurantEntity), eq(90.0), eq(1))).thenReturn(restaurantDomain);
 
         List<RestaurantDomain> result = restaurantServiceImpl.listRestaurantsForUser("chef123");
 

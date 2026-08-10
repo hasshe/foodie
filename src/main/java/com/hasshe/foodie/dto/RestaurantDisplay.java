@@ -7,5 +7,7 @@ public record RestaurantDisplay(
         String cuisineType,
         String website,
         String phone,
-        String groupName
+        String groupName,
+        double averageRating,
+        int ratingCount
 ) {}

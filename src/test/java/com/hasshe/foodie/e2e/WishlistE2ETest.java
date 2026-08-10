@@ -111,14 +111,14 @@ class WishlistE2ETest extends AbstractFoodieE2ETest {
     }
 
     @Test
-    void given_checkOffPrompt_when_cancelled_then_itemStaysOnWishlist() {
+    void given_checkOffPrompt_when_closed_then_itemStaysOnWishlist() {
         registerAndLogin("wishuser6");
         createGroup("Foodies");
         goToWishlist();
         addToWishlist("The Diner", "123 Main St");
 
         openWishlistItem("The Diner");
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Cancel")).click();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Close")).click();
 
         assertThat(page.locator("vaadin-grid").getByText("The Diner")).isVisible();
     }

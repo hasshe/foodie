@@ -52,14 +52,14 @@ class WishlistServiceImplTest {
         UserEntity user = new UserEntity("chef123", "hashedPassword", "Chef");
         GroupEntity group = new GroupEntity("Foodies");
         RestaurantEntity savedEntity = new RestaurantEntity("The Diner", "123 Main St", group, null, null, null, true);
-        RestaurantDomain expected = new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, null, null);
+        RestaurantDomain expected = new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, 0.0, 0, null, null);
         AddRestaurantDisplay request = new AddRestaurantDisplay("The Diner", "123 Main St", null, null, null, 1L);
 
         when(userDb.findByUsername("chef123")).thenReturn(Optional.of(user));
         when(groupDb.findById(1L)).thenReturn(Optional.of(group));
         when(groupDb.isMember(1L, user.getId())).thenReturn(true);
         when(restaurantDb.save(any(RestaurantEntity.class))).thenReturn(savedEntity);
-        when(restaurantMapper.mapToDomain(savedEntity)).thenReturn(expected);
+        when(restaurantMapper.mapToDomain(savedEntity, 0.0, 0)).thenReturn(expected);
 
         RestaurantDomain result = wishlistServiceImpl.addToWishlist("chef123", request);
 
@@ -77,8 +77,8 @@ class WishlistServiceImplTest {
         when(groupDb.findById(1L)).thenReturn(Optional.of(group));
         when(groupDb.isMember(1L, user.getId())).thenReturn(true);
         when(restaurantDb.save(any(RestaurantEntity.class))).thenReturn(savedEntity);
-        when(restaurantMapper.mapToDomain(savedEntity)).thenReturn(
-                new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, null, null));
+        when(restaurantMapper.mapToDomain(savedEntity, 0.0, 0)).thenReturn(
+                new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, 0.0, 0, null, null));
 
         wishlistServiceImpl.addToWishlist("chef123", request);
 
@@ -140,14 +140,12 @@ class WishlistServiceImplTest {
         UserEntity user = new UserEntity("chef123", "hashedPassword", "Chef");
         GroupEntity group = new GroupEntity("Foodies");
         RestaurantEntity restaurantEntity = new RestaurantEntity("The Diner", "123 Main St", group, null, null, null, true);
-        RestaurantDomain restaurantDomain = new RestaurantDomain(
-                1L, "The Diner", "123 Main St", null, null, null, null, null, null
-        );
+        RestaurantDomain restaurantDomain = new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, 0.0, 0, null, null);
 
         when(userDb.findByUsername("chef123")).thenReturn(Optional.of(user));
         when(groupDb.findByMemberId(user.getId())).thenReturn(List.of(group));
         when(restaurantDb.findByGroupIdInAndWishlist(Collections.singletonList(group.getId()), true)).thenReturn(List.of(restaurantEntity));
-        when(restaurantMapper.mapToDomain(restaurantEntity)).thenReturn(restaurantDomain);
+        when(restaurantMapper.mapToDomain(restaurantEntity, 0.0, 0)).thenReturn(restaurantDomain);
 
         List<RestaurantDomain> result = wishlistServiceImpl.listWishlistForUser("chef123");
 
@@ -185,13 +183,13 @@ class WishlistServiceImplTest {
         UserEntity user = new UserEntity("chef123", "hashedPassword", "Chef");
         GroupEntity group = new GroupEntity("Foodies");
         RestaurantEntity restaurantEntity = new RestaurantEntity("The Diner", "123 Main St", group, null, null, null, true);
-        RestaurantDomain expected = new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, null, null);
+        RestaurantDomain expected = new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, 0.0, 0, null, null);
 
         when(userDb.findByUsername("chef123")).thenReturn(Optional.of(user));
         when(restaurantDb.findById(1L)).thenReturn(Optional.of(restaurantEntity));
         when(groupDb.isMember(group.getId(), user.getId())).thenReturn(true);
         when(restaurantDb.save(restaurantEntity)).thenReturn(restaurantEntity);
-        when(restaurantMapper.mapToDomain(restaurantEntity)).thenReturn(expected);
+        when(restaurantMapper.mapToDomain(restaurantEntity, 0.0, 0)).thenReturn(expected);
 
         RestaurantDomain result = wishlistServiceImpl.checkOffWishlistItem("chef123", 1L);
 
@@ -209,8 +207,8 @@ class WishlistServiceImplTest {
         when(restaurantDb.findById(1L)).thenReturn(Optional.of(restaurantEntity));
         when(groupDb.isMember(group.getId(), user.getId())).thenReturn(true);
         when(restaurantDb.save(restaurantEntity)).thenReturn(restaurantEntity);
-        when(restaurantMapper.mapToDomain(restaurantEntity)).thenReturn(
-                new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, null, null));
+        when(restaurantMapper.mapToDomain(restaurantEntity, 0.0, 0)).thenReturn(
+                new RestaurantDomain(1L, "The Diner", "123 Main St", null, null, null, null, 0.0, 0, null, null));
 
         wishlistServiceImpl.checkOffWishlistItem("chef123", 1L);
 

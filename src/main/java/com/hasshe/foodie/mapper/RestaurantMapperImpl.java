@@ -17,7 +17,7 @@ class RestaurantMapperImpl implements RestaurantMapper {
     }
 
     @Override
-    public RestaurantDomain mapToDomain(RestaurantEntity restaurantEntity) {
+    public RestaurantDomain mapToDomain(RestaurantEntity restaurantEntity, double averageRating, int ratingCount) {
         Assert.notNull(restaurantEntity, "restaurantEntity must not be null");
         GroupDomain groupDomain = groupMapper.mapToDomain(restaurantEntity.getGroup());
         RestaurantDomain restaurantDomain = new RestaurantDomain(
@@ -28,6 +28,8 @@ class RestaurantMapperImpl implements RestaurantMapper {
                 restaurantEntity.getWebsite().orElse(null),
                 restaurantEntity.getPhone().orElse(null),
                 groupDomain,
+                averageRating,
+                ratingCount,
                 restaurantEntity.getCreatedAt(),
                 restaurantEntity.getUpdatedAt()
         );
@@ -45,7 +47,9 @@ class RestaurantMapperImpl implements RestaurantMapper {
                 restaurantDomain.cuisineType(),
                 restaurantDomain.website(),
                 restaurantDomain.phone(),
-                restaurantDomain.group().name()
+                restaurantDomain.group().name(),
+                restaurantDomain.averageRating(),
+                restaurantDomain.ratingCount()
         );
         assert restaurantDisplay != null : "mapping must never produce null";
         return restaurantDisplay;

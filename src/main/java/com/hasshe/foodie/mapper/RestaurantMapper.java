@@ -6,7 +6,7 @@ import com.hasshe.foodie.dto.RestaurantDisplay;
 
 public interface RestaurantMapper {
 
-    RestaurantDomain mapToDomain(RestaurantEntity restaurantEntity);
+    RestaurantDomain mapToDomain(RestaurantEntity restaurantEntity, double averageRating, int ratingCount);
 
     RestaurantDisplay mapToDisplay(RestaurantDomain restaurantDomain);
 }

@@ -2,9 +2,11 @@ package com.hasshe.foodie.service.impl;
 
 import com.hasshe.foodie.db.api.GroupDb;
 import com.hasshe.foodie.db.api.RestaurantDb;
+import com.hasshe.foodie.db.api.RestaurantRatingDb;
 import com.hasshe.foodie.db.api.UserDb;
 import com.hasshe.foodie.db.entity.GroupEntity;
 import com.hasshe.foodie.db.entity.RestaurantEntity;
+import com.hasshe.foodie.db.entity.RestaurantRatingEntity;
 import com.hasshe.foodie.db.entity.UserEntity;
 import com.hasshe.foodie.domain.RestaurantDomain;
 import com.hasshe.foodie.dto.AddRestaurantDisplay;
@@ -25,12 +27,20 @@ class RestaurantServiceImpl implements RestaurantService {
     private static final Logger log = LoggerFactory.getLogger(RestaurantServiceImpl.class);
 
     private final RestaurantDb restaurantDb;
+    private final RestaurantRatingDb restaurantRatingDb;
     private final GroupDb groupDb;
     private final UserDb userDb;
     private final RestaurantMapper restaurantMapper;
 
-    RestaurantServiceImpl(RestaurantDb restaurantDb, GroupDb groupDb, UserDb userDb, RestaurantMapper restaurantMapper) {
+    RestaurantServiceImpl(
+            RestaurantDb restaurantDb,
+            RestaurantRatingDb restaurantRatingDb,
+            GroupDb groupDb,
+            UserDb userDb,
+            RestaurantMapper restaurantMapper
+    ) {
         this.restaurantDb = restaurantDb;
+        this.restaurantRatingDb = restaurantRatingDb;
         this.groupDb = groupDb;
         this.userDb = userDb;
         this.restaurantMapper = restaurantMapper;
@@ -62,7 +72,7 @@ class RestaurantServiceImpl implements RestaurantService {
         );
         RestaurantEntity savedRestaurantEntity = restaurantDb.save(restaurantEntity);
 
-        RestaurantDomain restaurantDomain = restaurantMapper.mapToDomain(savedRestaurantEntity);
+        RestaurantDomain restaurantDomain = restaurantMapper.mapToDomain(savedRestaurantEntity, 0.0, 0);
         assert restaurantDomain != null : "mapper must never return null";
         log.info("Added restaurant '{}' with id {} to group {}", restaurantDomain.name(), restaurantDomain.id(), groupEntity.getId());
         return restaurantDomain;
@@ -80,6 +90,22 @@ class RestaurantServiceImpl implements RestaurantService {
         if (groupIds.isEmpty()) {
             return List.of();
         }
-        return restaurantDb.findByGroupIdInAndWishlist(groupIds, false).stream().map(restaurantMapper::mapToDomain).toList();
+        return restaurantDb.findByGroupIdInAndWishlist(groupIds, false).stream().map(this::mapWithAverageRating).toList();
+    }
+
+    private RestaurantDomain mapWithAverageRating(RestaurantEntity restaurantEntity) {
+        List<RestaurantRatingEntity> ratingEntities = restaurantRatingDb.findByRestaurantId(restaurantEntity.getId());
+        double averageRating = averageOf(ratingEntities);
+        return restaurantMapper.mapToDomain(restaurantEntity, averageRating, ratingEntities.size());
+    }
+
+    private double averageOf(List<RestaurantRatingEntity> ratingEntities) {
+        if (ratingEntities.isEmpty()) {
+            return 0.0;
+        }
+        return ratingEntities.stream()
+                .mapToDouble(rating -> (rating.getFood() + rating.getService() + rating.getVibe()) / 3.0)
+                .average()
+                .orElse(0.0);
     }
 }

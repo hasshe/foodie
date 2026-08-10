@@ -28,6 +28,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -44,12 +45,16 @@ import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Route(value = RouteConstants.ROUTE_RESTAURANTS, layout = MainLayout.class)
 @PageTitle("Restaurants | Foodie")
 @PermitAll
 public class RestaurantsView extends VerticalLayout implements BeforeEnterObserver {
+
+    private static final String ALL_GROUPS_LABEL = "All groups";
 
     private final RestaurantController restaurantController;
     private final GroupController groupController;
@@ -60,6 +65,7 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
     private final AuthenticationContext authenticationContext;
 
     private final Grid<RestaurantDisplay> restaurantGrid = new Grid<>(RestaurantDisplay.class, false);
+    private final Select<String> groupFilterSelect = new Select<>();
 
     private final Dialog addRestaurantDialog = new Dialog();
     private final TextField nameField = new TextField("Name");
@@ -96,18 +102,23 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
         setAlignItems(Alignment.CENTER);
 
         restaurantGrid.addColumn(RestaurantDisplay::name).setHeader("Name");
-        restaurantGrid.addColumn(RestaurantDisplay::address).setHeader("Address");
-        restaurantGrid.addColumn(RestaurantDisplay::groupName).setHeader("Group");
+        Grid.Column<RestaurantDisplay> ratingColumn = restaurantGrid.addColumn(this::formatAverageRating).setHeader("Rating");
+        ratingColumn.setComparator(RestaurantDisplay::averageRating);
         restaurantGrid.setWidthFull();
         restaurantGrid.getStyle().set("max-width", "640px").set("align-self", "center");
         restaurantGrid.addItemClickListener(event -> openRestaurantInfoDialog(event.getItem()));
+        restaurantGrid.sort(GridSortOrder.desc(ratingColumn).build());
+
+        groupFilterSelect.setLabel("Filter by group");
+        groupFilterSelect.setWidth("320px");
+        groupFilterSelect.addValueChangeListener(event -> applyGroupFilter());
 
         Button addRestaurantButton = new Button("Add restaurant", event -> openAddRestaurantDialog());
         addRestaurantButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         buildAddRestaurantDialog();
 
-        VerticalLayout card = new VerticalLayout(new H1("Restaurants"), addRestaurantButton, restaurantGrid);
+        VerticalLayout card = new VerticalLayout(new H1("Restaurants"), addRestaurantButton, groupFilterSelect, restaurantGrid);
         card.setAlignItems(Alignment.CENTER);
         card.setWidthFull();
 
@@ -125,6 +136,32 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
 
     private void refreshRestaurants() {
         restaurantGrid.setItems(restaurantController.listRestaurantsForUser(currentUsername));
+        refreshGroupFilterOptions();
+        applyGroupFilter();
+    }
+
+    private void refreshGroupFilterOptions() {
+        List<String> groupNames = groupController.listGroupsForUser(currentUsername).stream()
+                .map(GroupDisplay::name)
+                .distinct()
+                .sorted()
+                .toList();
+        List<String> items = new ArrayList<>();
+        items.add(ALL_GROUPS_LABEL);
+        items.addAll(groupNames);
+
+        String previousValue = groupFilterSelect.getValue();
+        groupFilterSelect.setItems(items);
+        groupFilterSelect.setValue(items.contains(previousValue) ? previousValue : ALL_GROUPS_LABEL);
+    }
+
+    private void applyGroupFilter() {
+        String selectedGroupName = groupFilterSelect.getValue();
+        if (selectedGroupName == null || selectedGroupName.equals(ALL_GROUPS_LABEL)) {
+            restaurantGrid.getListDataView().removeFilters();
+        } else {
+            restaurantGrid.getListDataView().setFilter(restaurantDisplay -> restaurantDisplay.groupName().equals(selectedGroupName));
+        }
     }
 
     private void openRatingDialogFromQueryParameter(BeforeEnterEvent event) {
@@ -254,6 +291,7 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
             restaurantRatingController.rateRestaurant(currentUsername, restaurantId, rateRestaurantDisplay);
             RestaurantRatingSummaryDisplay updatedSummary = restaurantRatingController.getRatingSummary(currentUsername, restaurantId);
             restaurantRatingDialogComponent.refresh(updatedSummary);
+            refreshRestaurants();
             Notification success = Notification.show("Rating saved.");
             success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         } catch (ValidationException e) {
@@ -310,6 +348,13 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
 
     private String generateGroupLabel(GroupDisplay groupDisplay) {
         return groupDisplay == null ? "" : groupDisplay.name();
+    }
+
+    private String formatAverageRating(RestaurantDisplay restaurantDisplay) {
+        if (restaurantDisplay.ratingCount() == 0) {
+            return "No ratings";
+        }
+        return String.format(Locale.US, "%.1f", restaurantDisplay.averageRating());
     }
 
     private String blankToNull(String value) {
