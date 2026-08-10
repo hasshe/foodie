@@ -2,14 +2,26 @@ package com.hasshe.foodie.views;
 
 import com.hasshe.foodie.constants.RestaurantConstants;
 import com.hasshe.foodie.constants.RouteConstants;
+import com.hasshe.foodie.controller.FoodItemController;
+import com.hasshe.foodie.controller.FoodItemRatingController;
 import com.hasshe.foodie.controller.GroupController;
 import com.hasshe.foodie.controller.ProfileController;
 import com.hasshe.foodie.controller.RestaurantController;
+import com.hasshe.foodie.controller.RestaurantRatingController;
+import com.hasshe.foodie.dto.AddFoodItemDisplay;
 import com.hasshe.foodie.dto.AddRestaurantDisplay;
+import com.hasshe.foodie.dto.FoodItemDisplay;
+import com.hasshe.foodie.dto.FoodItemRatingSummaryDisplay;
 import com.hasshe.foodie.dto.GroupDisplay;
+import com.hasshe.foodie.dto.RateFoodItemDisplay;
+import com.hasshe.foodie.dto.RateRestaurantDisplay;
 import com.hasshe.foodie.dto.RestaurantDisplay;
+import com.hasshe.foodie.dto.RestaurantRatingSummaryDisplay;
 import com.hasshe.foodie.dto.UserProfileDisplay;
 import com.hasshe.foodie.exception.ValidationException;
+import com.hasshe.foodie.views.components.FoodItemListDialogComponent;
+import com.hasshe.foodie.views.components.FoodItemRatingDialogComponent;
+import com.hasshe.foodie.views.components.RestaurantRatingDialogComponent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -40,6 +52,9 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
     private final RestaurantController restaurantController;
     private final GroupController groupController;
     private final ProfileController profileController;
+    private final RestaurantRatingController restaurantRatingController;
+    private final FoodItemController foodItemController;
+    private final FoodItemRatingController foodItemRatingController;
     private final AuthenticationContext authenticationContext;
 
     private final Grid<RestaurantDisplay> restaurantGrid = new Grid<>(RestaurantDisplay.class, false);
@@ -51,17 +66,27 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
     private final TextField websiteField = new TextField("Website");
     private final Select<GroupDisplay> groupSelect = new Select<>();
 
+    private final RestaurantRatingDialogComponent restaurantRatingDialogComponent = new RestaurantRatingDialogComponent();
+    private final FoodItemListDialogComponent foodItemListDialogComponent = new FoodItemListDialogComponent();
+    private final FoodItemRatingDialogComponent foodItemRatingDialogComponent = new FoodItemRatingDialogComponent();
+
     private String currentUsername;
 
     public RestaurantsView(
             RestaurantController restaurantController,
             GroupController groupController,
             ProfileController profileController,
+            RestaurantRatingController restaurantRatingController,
+            FoodItemController foodItemController,
+            FoodItemRatingController foodItemRatingController,
             AuthenticationContext authenticationContext
     ) {
         this.restaurantController = restaurantController;
         this.groupController = groupController;
         this.profileController = profileController;
+        this.restaurantRatingController = restaurantRatingController;
+        this.foodItemController = foodItemController;
+        this.foodItemRatingController = foodItemRatingController;
         this.authenticationContext = authenticationContext;
 
         setSizeFull();
@@ -72,6 +97,7 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
         restaurantGrid.addColumn(RestaurantDisplay::groupName).setHeader("Group");
         restaurantGrid.setWidth("640px");
         restaurantGrid.getStyle().set("align-self", "center");
+        restaurantGrid.addItemClickListener(event -> openRatingDialog(event.getItem()));
 
         Button addRestaurantButton = new Button("Add restaurant", event -> openAddRestaurantDialog());
         addRestaurantButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -182,6 +208,76 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
             Notification success = Notification.show("Restaurant added.");
             success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
             refreshRestaurants();
+        } catch (ValidationException e) {
+            Notification errorNotification = Notification.show(e.getMessage());
+            errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        }
+    }
+
+    private void openRatingDialog(RestaurantDisplay restaurantDisplay) {
+        RestaurantRatingSummaryDisplay restaurantRatingSummaryDisplay =
+                restaurantRatingController.getRatingSummary(currentUsername, restaurantDisplay.id());
+        restaurantRatingDialogComponent.open(
+                restaurantRatingSummaryDisplay,
+                rateRestaurantDisplay -> handleRateSubmit(restaurantDisplay.id(), rateRestaurantDisplay),
+                () -> openFoodItemsDialog(restaurantDisplay)
+        );
+    }
+
+    private void handleRateSubmit(Long restaurantId, RateRestaurantDisplay rateRestaurantDisplay) {
+        try {
+            restaurantRatingController.rateRestaurant(currentUsername, restaurantId, rateRestaurantDisplay);
+            RestaurantRatingSummaryDisplay updatedSummary = restaurantRatingController.getRatingSummary(currentUsername, restaurantId);
+            restaurantRatingDialogComponent.refresh(updatedSummary);
+            Notification success = Notification.show("Rating saved.");
+            success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+        } catch (ValidationException e) {
+            Notification errorNotification = Notification.show(e.getMessage());
+            errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        }
+    }
+
+    private void openFoodItemsDialog(RestaurantDisplay restaurantDisplay) {
+        restaurantRatingDialogComponent.close();
+        List<FoodItemDisplay> foodItems = foodItemController.listFoodItemsForRestaurant(currentUsername, restaurantDisplay.id());
+        foodItemListDialogComponent.open(
+                foodItems,
+                (addFoodItemDisplay, rateFoodItemDisplay) -> handleAddFoodItem(restaurantDisplay.id(), addFoodItemDisplay, rateFoodItemDisplay),
+                this::openFoodItemRatingDialog
+        );
+    }
+
+    private void handleAddFoodItem(Long restaurantId, AddFoodItemDisplay addFoodItemDisplay, RateFoodItemDisplay rateFoodItemDisplay) {
+        try {
+            FoodItemDisplay addedFoodItem = foodItemController.addFoodItem(currentUsername, restaurantId, addFoodItemDisplay);
+            foodItemRatingController.rateFoodItem(currentUsername, addedFoodItem.id(), rateFoodItemDisplay);
+            List<FoodItemDisplay> updatedFoodItems = foodItemController.listFoodItemsForRestaurant(currentUsername, restaurantId);
+            foodItemListDialogComponent.refresh(updatedFoodItems);
+            Notification success = Notification.show("Food item added.");
+            success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+        } catch (ValidationException e) {
+            Notification errorNotification = Notification.show(e.getMessage());
+            errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        }
+    }
+
+    private void openFoodItemRatingDialog(FoodItemDisplay foodItemDisplay) {
+        foodItemListDialogComponent.close();
+        FoodItemRatingSummaryDisplay foodItemRatingSummaryDisplay =
+                foodItemRatingController.getRatingSummary(currentUsername, foodItemDisplay.id());
+        foodItemRatingDialogComponent.open(
+                foodItemRatingSummaryDisplay,
+                rateFoodItemDisplay -> handleRateFoodItemSubmit(foodItemDisplay.id(), rateFoodItemDisplay)
+        );
+    }
+
+    private void handleRateFoodItemSubmit(Long foodItemId, RateFoodItemDisplay rateFoodItemDisplay) {
+        try {
+            foodItemRatingController.rateFoodItem(currentUsername, foodItemId, rateFoodItemDisplay);
+            FoodItemRatingSummaryDisplay updatedSummary = foodItemRatingController.getRatingSummary(currentUsername, foodItemId);
+            foodItemRatingDialogComponent.refresh(updatedSummary);
+            Notification success = Notification.show("Rating saved.");
+            success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         } catch (ValidationException e) {
             Notification errorNotification = Notification.show(e.getMessage());
             errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);

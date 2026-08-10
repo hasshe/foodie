@@ -346,7 +346,7 @@
       <div class="card">
         <h3>Ratings</h3>
         <ul>
-          <li>Scale: 1 (terrible) – 10 (perfection)</li>
+          <li>Scale: 1 (terrible) – 100 (perfection), input via slider</li>
           <li>Each member rates independently</li>
           <li>Group sees aggregate average per category</li>
           <li>Employees &amp; Service</li>
@@ -354,6 +354,8 @@
           <li>General Vibes</li>
           <li>Price for Quality</li>
           <li>Location &amp; Locale</li>
+          <li>Food Quality — a general "how was the food" signal on the restaurant itself</li>
+          <li>Separate from Food Item ratings below — the two rating systems never share data</li>
         </ul>
       </div>
     </div>
@@ -381,14 +383,15 @@
       <div class="card">
         <h3>Food Items</h3>
         <ul>
-          <li>Log individual dishes per visit</li>
-          <li>Name, description, optional price</li>
-          <li>Assign a dish category (e.g. "Steak")</li>
-          <li>Scale: 1 (terrible) – 10 (perfection)</li>
+          <li>V1: attached directly to a Restaurant, added ahead of full Visit logging — a group member adds a food item only when they care enough about that dish to compare it across restaurants later</li>
+          <li>Name, assign a dish category (e.g. "Steak")</li>
+          <li>Own independent rating, unrelated to the restaurant's overall rating</li>
+          <li>Scale: 1 (terrible) – 100 (perfection), input via slider</li>
           <li>Taste</li>
           <li>Presentation</li>
           <li>Portion Quality</li>
           <li>Value for Price</li>
+          <li>Future: once Visits are logged, food items will move under a Visit as originally designed</li>
         </ul>
       </div>
       <div class="card">
@@ -538,6 +541,7 @@
           <li>has an Address (lat/lng)</li>
           <li>has many Visits</li>
           <li>has many RestaurantRatings</li>
+          <li>has many FoodItems (V1 — see FoodItem)</li>
         </ul>
       </div>
       <div class="model-entity">
@@ -545,16 +549,17 @@
         <ul>
           <li>belongs to one Restaurant</li>
           <li>logged by one User</li>
-          <li>has many FoodItems</li>
+          <li>has many FoodItems (planned — not yet wired up)</li>
         </ul>
       </div>
       <div class="model-entity">
         <div class="entity-name">FoodItem</div>
         <ul>
-          <li>belongs to one Visit</li>
+          <li>V1: belongs directly to one Restaurant, added independently of any Visit</li>
           <li>has a DishCategory</li>
-          <li>has a FoodRating</li>
-          <li>has many Images</li>
+          <li>has many FoodItemRatings (own 1–100 scale, unrelated to RestaurantRatings)</li>
+          <li>has many Images (planned)</li>
+          <li>Future: reparented under Visit once visit logging ships</li>
         </ul>
       </div>
       <div class="model-entity">
@@ -595,9 +600,9 @@
         <tr>
           <td>Rating categories</td>
           <td>
-            All ratings use a 1–10 scale (1 = terrible, 10 = perfection).<br/>
-            <strong>Restaurant:</strong> Employees &amp; Service, Audio &amp; Music, General Vibes, Price for Quality, Location &amp; Locale.<br/>
-            <strong>Food:</strong> Taste, Presentation, Portion Quality, Value for Price.
+            All ratings use a 1–100 slider scale (1 = terrible, 100 = perfection).<br/>
+            <strong>Restaurant:</strong> Employees &amp; Service, Audio &amp; Music, General Vibes, Price for Quality, Location &amp; Locale, Food Quality.<br/>
+            <strong>Food Item:</strong> Taste, Presentation, Portion Quality, Value for Price — its own independent rating, opt-in per dish, never mixed with the Restaurant's ratings.
           </td>
           <td><span class="tag tag--resolved">Resolved</span></td>
         </tr>
