@@ -1,5 +1,6 @@
 package com.hasshe.foodie.e2e;
 
+import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
 import org.junit.jupiter.api.Test;
@@ -7,6 +8,27 @@ import org.junit.jupiter.api.Test;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 class WishlistE2ETest extends AbstractFoodieE2ETest {
+
+    @Test
+    void given_wishlistItemSelected_when_viewingInfoDialog_then_showsFullDetailsBeforeCheckOff() {
+        registerAndLogin("wishinfouser1");
+        createGroup("Foodies");
+        goToWishlist();
+        addToWishlistWithDetails("The Diner", "123 Main St", "American", "https://thediner.example");
+
+        page.locator("vaadin-grid").getByText("The Diner").click();
+
+        Locator dialogOverlay = page.locator("vaadin-dialog-overlay");
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("The Diner"))).isVisible();
+        assertThat(dialogOverlay.getByText("123 Main St")).isVisible();
+        assertThat(dialogOverlay.getByText("American")).isVisible();
+        assertThat(dialogOverlay.getByText("https://thediner.example")).isVisible();
+        assertThat(dialogOverlay.getByText("Foodies")).isVisible();
+
+        dialogOverlay.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Check off")).click();
+
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Mark \"The Diner\" as visited?"))).isVisible();
+    }
 
     @Test
     void given_userWithNoGroups_when_addingToWishlist_then_redirectsToGroupsWithError() {
@@ -58,7 +80,7 @@ class WishlistE2ETest extends AbstractFoodieE2ETest {
         goToWishlist();
         addToWishlist("The Diner", "123 Main St");
 
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Check off")).click();
+        openWishlistItem("The Diner");
         assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Mark \"The Diner\" as visited?"))).isVisible();
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Rate later")).click();
 
@@ -77,7 +99,7 @@ class WishlistE2ETest extends AbstractFoodieE2ETest {
         goToWishlist();
         addToWishlist("The Diner", "123 Main St");
 
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Check off")).click();
+        openWishlistItem("The Diner");
         assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Mark \"The Diner\" as visited?"))).isVisible();
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Rate now")).click();
         assertThat(page.getByText("Marked as visited.")).isVisible();
@@ -85,7 +107,7 @@ class WishlistE2ETest extends AbstractFoodieE2ETest {
 
         assertThat(page.getByText("The Diner", new Page.GetByTextOptions().setExact(true)).first()).isVisible();
         assertThat(page.getByText("Overall average")).isVisible();
-        assertThat(page.getByText("Employees & Service", new Page.GetByTextOptions().setExact(true))).isVisible();
+        assertThat(page.getByText("Food", new Page.GetByTextOptions().setExact(true))).isVisible();
     }
 
     @Test
@@ -95,7 +117,7 @@ class WishlistE2ETest extends AbstractFoodieE2ETest {
         goToWishlist();
         addToWishlist("The Diner", "123 Main St");
 
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Check off")).click();
+        openWishlistItem("The Diner");
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Cancel")).click();
 
         assertThat(page.locator("vaadin-grid").getByText("The Diner")).isVisible();
@@ -131,6 +153,22 @@ class WishlistE2ETest extends AbstractFoodieE2ETest {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add to wishlist")).click();
         page.getByLabel("Name").fill(name);
         page.getByLabel("Address").fill(address);
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add").setExact(true)).click();
+        assertThat(page.getByText("Added to wishlist.")).isVisible();
+    }
+
+    private void openWishlistItem(String name) {
+        page.locator("vaadin-grid").getByText(name).click();
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName(name))).isVisible();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Check off")).click();
+    }
+
+    private void addToWishlistWithDetails(String name, String address, String cuisineType, String website) {
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add to wishlist")).click();
+        page.getByLabel("Name").fill(name);
+        page.getByLabel("Address").fill(address);
+        page.getByLabel("Cuisine type").fill(cuisineType);
+        page.getByLabel("Website").fill(website);
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add").setExact(true)).click();
         assertThat(page.getByText("Added to wishlist.")).isVisible();
     }

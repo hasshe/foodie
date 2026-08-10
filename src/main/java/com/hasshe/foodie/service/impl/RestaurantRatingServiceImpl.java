@@ -65,24 +65,18 @@ class RestaurantRatingServiceImpl implements RestaurantRatingService {
         RestaurantRatingEntity ratingEntity = restaurantRatingDb.findByRestaurantIdAndUserId(restaurantId, rater.getId())
                 .map(existing -> {
                     existing.updateScores(
-                            rateRestaurantDisplay.employeesService(),
-                            rateRestaurantDisplay.audioMusic(),
-                            rateRestaurantDisplay.generalVibes(),
-                            rateRestaurantDisplay.priceForQuality(),
-                            rateRestaurantDisplay.locationLocale(),
-                            rateRestaurantDisplay.foodQuality()
+                            rateRestaurantDisplay.food(),
+                            rateRestaurantDisplay.service(),
+                            rateRestaurantDisplay.vibe()
                     );
                     return existing;
                 })
                 .orElseGet(() -> new RestaurantRatingEntity(
                         restaurant,
                         rater,
-                        rateRestaurantDisplay.employeesService(),
-                        rateRestaurantDisplay.audioMusic(),
-                        rateRestaurantDisplay.generalVibes(),
-                        rateRestaurantDisplay.priceForQuality(),
-                        rateRestaurantDisplay.locationLocale(),
-                        rateRestaurantDisplay.foodQuality()
+                        rateRestaurantDisplay.food(),
+                        rateRestaurantDisplay.service(),
+                        rateRestaurantDisplay.vibe()
                 ));
 
         RestaurantRatingEntity savedRatingEntity = restaurantRatingDb.save(ratingEntity);

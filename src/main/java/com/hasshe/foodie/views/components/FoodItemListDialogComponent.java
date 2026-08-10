@@ -32,14 +32,8 @@ public class FoodItemListDialogComponent {
     private final Grid<FoodItemDisplay> foodItemGrid = new Grid<>(FoodItemDisplay.class, false);
     private final TextField nameField = new TextField("Name");
     private final TextField dishCategoryField = new TextField("Dish category");
-    private final RatingSliderComponent tasteSlider =
-            new RatingSliderComponent(FoodItemRatingConstants.CATEGORY_TASTE, FoodItemRatingConstants.DEFAULT_SCORE);
-    private final RatingSliderComponent presentationSlider =
-            new RatingSliderComponent(FoodItemRatingConstants.CATEGORY_PRESENTATION, FoodItemRatingConstants.DEFAULT_SCORE);
-    private final RatingSliderComponent portionQualitySlider =
-            new RatingSliderComponent(FoodItemRatingConstants.CATEGORY_PORTION_QUALITY, FoodItemRatingConstants.DEFAULT_SCORE);
-    private final RatingSliderComponent valueForPriceSlider =
-            new RatingSliderComponent(FoodItemRatingConstants.CATEGORY_VALUE_FOR_PRICE, FoodItemRatingConstants.DEFAULT_SCORE);
+    private final RatingSliderComponent ratingSlider =
+            new RatingSliderComponent(FoodItemRatingConstants.CATEGORY_RATING, FoodItemRatingConstants.DEFAULT_SCORE);
 
     private AddFoodItemListener addFoodItemListener = (addFoodItemDisplay, rateFoodItemDisplay) -> {};
     private FoodItemSelectedListener foodItemSelectedListener = foodItemDisplay -> {};
@@ -66,10 +60,7 @@ public class FoodItemListDialogComponent {
                 nameField,
                 dishCategoryField,
                 new Span("Your rating"),
-                tasteSlider,
-                presentationSlider,
-                portionQualitySlider,
-                valueForPriceSlider,
+                ratingSlider,
                 addButton
         );
         formLayout.setPadding(false);
@@ -105,12 +96,7 @@ public class FoodItemListDialogComponent {
             return;
         }
         AddFoodItemDisplay addFoodItemDisplay = new AddFoodItemDisplay(nameField.getValue(), dishCategoryField.getValue());
-        RateFoodItemDisplay rateFoodItemDisplay = new RateFoodItemDisplay(
-                tasteSlider.getValue(),
-                presentationSlider.getValue(),
-                portionQualitySlider.getValue(),
-                valueForPriceSlider.getValue()
-        );
+        RateFoodItemDisplay rateFoodItemDisplay = new RateFoodItemDisplay(ratingSlider.getValue());
         addFoodItemListener.onAdd(addFoodItemDisplay, rateFoodItemDisplay);
         resetForm();
     }
@@ -125,9 +111,6 @@ public class FoodItemListDialogComponent {
     private void resetForm() {
         nameField.clear();
         dishCategoryField.clear();
-        tasteSlider.setValue(FoodItemRatingConstants.DEFAULT_SCORE);
-        presentationSlider.setValue(FoodItemRatingConstants.DEFAULT_SCORE);
-        portionQualitySlider.setValue(FoodItemRatingConstants.DEFAULT_SCORE);
-        valueForPriceSlider.setValue(FoodItemRatingConstants.DEFAULT_SCORE);
+        ratingSlider.setValue(FoodItemRatingConstants.DEFAULT_SCORE);
     }
 }

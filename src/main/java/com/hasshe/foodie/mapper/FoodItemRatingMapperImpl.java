@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import java.util.List;
-import java.util.function.ToIntFunction;
 
 @Component
 class FoodItemRatingMapperImpl implements FoodItemRatingMapper {
@@ -23,10 +22,7 @@ class FoodItemRatingMapperImpl implements FoodItemRatingMapper {
                 foodItemRatingEntity.getFoodItem().getId(),
                 foodItemRatingEntity.getRater().getUsername(),
                 foodItemRatingEntity.getRater().getDisplayName(),
-                foodItemRatingEntity.getTaste(),
-                foodItemRatingEntity.getPresentation(),
-                foodItemRatingEntity.getPortionQuality(),
-                foodItemRatingEntity.getValueForPrice(),
+                foodItemRatingEntity.getRating(),
                 foodItemRatingEntity.getCreatedAt(),
                 foodItemRatingEntity.getUpdatedAt()
         );
@@ -40,11 +36,7 @@ class FoodItemRatingMapperImpl implements FoodItemRatingMapper {
         FoodItemRatingDisplay foodItemRatingDisplay = new FoodItemRatingDisplay(
                 foodItemRatingDomain.id(),
                 foodItemRatingDomain.raterDisplayName(),
-                foodItemRatingDomain.taste(),
-                foodItemRatingDomain.presentation(),
-                foodItemRatingDomain.portionQuality(),
-                foodItemRatingDomain.valueForPrice(),
-                foodItemRatingDomain.averageScore()
+                foodItemRatingDomain.rating()
         );
         assert foodItemRatingDisplay != null : "mapping must never produce null";
         return foodItemRatingDisplay;
@@ -57,22 +49,14 @@ class FoodItemRatingMapperImpl implements FoodItemRatingMapper {
 
         List<FoodItemRatingDomain> ratingDomains = foodItemRatingEntities.stream().map(this::mapToDomain).toList();
         int ratingCount = ratingDomains.size();
-        double averageTaste = average(ratingDomains, FoodItemRatingDomain::taste);
-        double averagePresentation = average(ratingDomains, FoodItemRatingDomain::presentation);
-        double averagePortionQuality = average(ratingDomains, FoodItemRatingDomain::portionQuality);
-        double averageValueForPrice = average(ratingDomains, FoodItemRatingDomain::valueForPrice);
-        double overallAverage = ratingCount == 0
+        double averageRating = ratingCount == 0
                 ? 0.0
-                : (averageTaste + averagePresentation + averagePortionQuality + averageValueForPrice) / 4.0;
+                : ratingDomains.stream().mapToInt(FoodItemRatingDomain::rating).average().orElse(0.0);
 
         FoodItemRatingSummaryDomain foodItemRatingSummaryDomain = new FoodItemRatingSummaryDomain(
                 foodItemEntity.getId(),
                 foodItemEntity.getName(),
-                averageTaste,
-                averagePresentation,
-                averagePortionQuality,
-                averageValueForPrice,
-                overallAverage,
+                averageRating,
                 ratingCount,
                 ratingDomains
         );
@@ -95,23 +79,12 @@ class FoodItemRatingMapperImpl implements FoodItemRatingMapper {
         FoodItemRatingSummaryDisplay foodItemRatingSummaryDisplay = new FoodItemRatingSummaryDisplay(
                 foodItemRatingSummaryDomain.foodItemId(),
                 foodItemRatingSummaryDomain.foodItemName(),
-                foodItemRatingSummaryDomain.averageTaste(),
-                foodItemRatingSummaryDomain.averagePresentation(),
-                foodItemRatingSummaryDomain.averagePortionQuality(),
-                foodItemRatingSummaryDomain.averageValueForPrice(),
-                foodItemRatingSummaryDomain.overallAverage(),
+                foodItemRatingSummaryDomain.averageRating(),
                 foodItemRatingSummaryDomain.ratingCount(),
                 ratingDisplays,
                 currentUserRating
         );
         assert foodItemRatingSummaryDisplay != null : "mapping must never produce null";
         return foodItemRatingSummaryDisplay;
-    }
-
-    private double average(List<FoodItemRatingDomain> ratingDomains, ToIntFunction<FoodItemRatingDomain> scoreExtractor) {
-        if (ratingDomains.isEmpty()) {
-            return 0.0;
-        }
-        return ratingDomains.stream().mapToInt(scoreExtractor).average().orElse(0.0);
     }
 }

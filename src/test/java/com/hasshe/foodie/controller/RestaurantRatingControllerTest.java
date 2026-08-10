@@ -34,14 +34,14 @@ class RestaurantRatingControllerTest {
     @InjectMocks
     private RestaurantRatingController restaurantRatingController;
 
-    private final RateRestaurantDisplay rateRequest = new RateRestaurantDisplay(80, 70, 90, 60, 50, 45);
+    private final RateRestaurantDisplay rateRequest = new RateRestaurantDisplay(80, 70, 90);
 
     @Test
     void given_validRequest_when_rateRestaurant_then_returnsMappedDisplay() {
         RestaurantRatingDomain domain = new RestaurantRatingDomain(
-                1L, 1L, "chef123", "Chef", 80, 70, 90, 60, 50, 45, LocalDateTime.now(), LocalDateTime.now()
+                1L, 1L, "chef123", "Chef", 80, 70, 90, LocalDateTime.now(), LocalDateTime.now()
         );
-        RestaurantRatingDisplay display = new RestaurantRatingDisplay(1L, "Chef", 80, 70, 90, 60, 50, 45, 65.8);
+        RestaurantRatingDisplay display = new RestaurantRatingDisplay(1L, "Chef", 80, 70, 90, 80.0);
         when(restaurantRatingService.rateRestaurant("chef123", 1L, rateRequest)).thenReturn(domain);
         when(restaurantRatingMapper.mapToDisplay(domain)).thenReturn(display);
 
@@ -53,11 +53,11 @@ class RestaurantRatingControllerTest {
     @Test
     void given_validRequest_when_rateRestaurant_then_delegatesToServiceExactlyOnce() {
         RestaurantRatingDomain domain = new RestaurantRatingDomain(
-                1L, 1L, "chef123", "Chef", 80, 70, 90, 60, 50, 45, LocalDateTime.now(), LocalDateTime.now()
+                1L, 1L, "chef123", "Chef", 80, 70, 90, LocalDateTime.now(), LocalDateTime.now()
         );
         when(restaurantRatingService.rateRestaurant("chef123", 1L, rateRequest)).thenReturn(domain);
         when(restaurantRatingMapper.mapToDisplay(domain)).thenReturn(
-                new RestaurantRatingDisplay(1L, "Chef", 80, 70, 90, 60, 50, 45, 65.8));
+                new RestaurantRatingDisplay(1L, "Chef", 80, 70, 90, 80.0));
 
         restaurantRatingController.rateRestaurant("chef123", 1L, rateRequest);
 
@@ -94,10 +94,10 @@ class RestaurantRatingControllerTest {
     @Test
     void given_restaurantWithRatings_when_getRatingSummary_then_returnsMappedSummaryDisplay() {
         RestaurantRatingSummaryDomain domain = new RestaurantRatingSummaryDomain(
-                1L, "The Diner", 80, 70, 90, 60, 50, 45, 65.8, 1, List.of()
+                1L, "The Diner", 80, 70, 90, 80, 1, List.of()
         );
         RestaurantRatingSummaryDisplay display = new RestaurantRatingSummaryDisplay(
-                1L, "The Diner", 80, 70, 90, 60, 50, 45, 65.8, 1, List.of(), null
+                1L, "The Diner", 80, 70, 90, 80, 1, List.of(), null
         );
         when(restaurantRatingService.getRatingSummary("chef123", 1L)).thenReturn(domain);
         when(restaurantRatingMapper.mapToSummaryDisplay(domain, "chef123")).thenReturn(display);
@@ -110,10 +110,10 @@ class RestaurantRatingControllerTest {
     @Test
     void given_restaurantWithNoRatings_when_getRatingSummary_then_returnsEmptySummaryDisplay() {
         RestaurantRatingSummaryDomain domain = new RestaurantRatingSummaryDomain(
-                1L, "The Diner", 0, 0, 0, 0, 0, 0, 0, 0, List.of()
+                1L, "The Diner", 0, 0, 0, 0, 0, List.of()
         );
         RestaurantRatingSummaryDisplay display = new RestaurantRatingSummaryDisplay(
-                1L, "The Diner", 0, 0, 0, 0, 0, 0, 0, 0, List.of(), null
+                1L, "The Diner", 0, 0, 0, 0, 0, List.of(), null
         );
         when(restaurantRatingService.getRatingSummary("chef123", 1L)).thenReturn(domain);
         when(restaurantRatingMapper.mapToSummaryDisplay(domain, "chef123")).thenReturn(display);

@@ -58,13 +58,13 @@ class FoodItemRatingServiceImplTest {
     private final RestaurantEntity restaurant = new RestaurantEntity("The Diner", "123 Main St", group, null, null, null);
     private final FoodItemEntity foodItem = new FoodItemEntity(restaurant, "Ribeye Steak", "Steak");
     private final UserEntity rater = new UserEntity("chef123", "hashedPassword", "Chef");
-    private final RateFoodItemDisplay rateRequest = new RateFoodItemDisplay(80, 70, 90, 60);
+    private final RateFoodItemDisplay rateRequest = new RateFoodItemDisplay(80);
 
     @Test
     void given_memberWithNoExistingRating_when_rateFoodItem_then_createsNewRatingAndReturnsDomain() {
-        FoodItemRatingEntity savedEntity = new FoodItemRatingEntity(foodItem, rater, 80, 70, 90, 60);
+        FoodItemRatingEntity savedEntity = new FoodItemRatingEntity(foodItem, rater, 80);
         FoodItemRatingDomain expected = new FoodItemRatingDomain(
-                1L, 1L, "chef123", "Chef", 80, 70, 90, 60, LocalDateTime.now(), LocalDateTime.now()
+                1L, 1L, "chef123", "Chef", 80, LocalDateTime.now(), LocalDateTime.now()
         );
 
         when(userDb.findByUsername("chef123")).thenReturn(Optional.of(rater));
@@ -81,7 +81,7 @@ class FoodItemRatingServiceImplTest {
 
     @Test
     void given_memberWithExistingRating_when_rateFoodItem_then_updatesExistingRatingInsteadOfCreatingNew() {
-        FoodItemRatingEntity existingEntity = new FoodItemRatingEntity(foodItem, rater, 10, 10, 10, 10);
+        FoodItemRatingEntity existingEntity = new FoodItemRatingEntity(foodItem, rater, 10);
 
         when(userDb.findByUsername("chef123")).thenReturn(Optional.of(rater));
         when(foodItemDb.findById(1L)).thenReturn(Optional.of(foodItem));
@@ -89,11 +89,11 @@ class FoodItemRatingServiceImplTest {
         when(foodItemRatingDb.findByFoodItemIdAndUserId(1L, rater.getId())).thenReturn(Optional.of(existingEntity));
         when(foodItemRatingDb.save(existingEntity)).thenReturn(existingEntity);
         when(foodItemRatingMapper.mapToDomain(existingEntity)).thenReturn(
-                new FoodItemRatingDomain(1L, 1L, "chef123", "Chef", 80, 70, 90, 60, LocalDateTime.now(), LocalDateTime.now()));
+                new FoodItemRatingDomain(1L, 1L, "chef123", "Chef", 80, LocalDateTime.now(), LocalDateTime.now()));
 
         foodItemRatingServiceImpl.rateFoodItem("chef123", 1L, rateRequest);
 
-        assertThat(existingEntity.getTaste()).isEqualTo(80);
+        assertThat(existingEntity.getRating()).isEqualTo(80);
         verify(foodItemRatingDb, times(1)).save(existingEntity);
     }
 
@@ -139,9 +139,9 @@ class FoodItemRatingServiceImplTest {
 
     @Test
     void given_memberOfGroup_when_getRatingSummary_then_returnsSummaryDomain() {
-        FoodItemRatingEntity ratingEntity = new FoodItemRatingEntity(foodItem, rater, 80, 70, 90, 60);
+        FoodItemRatingEntity ratingEntity = new FoodItemRatingEntity(foodItem, rater, 80);
         FoodItemRatingSummaryDomain expected = new FoodItemRatingSummaryDomain(
-                1L, "Ribeye Steak", 80, 70, 90, 60, 75, 1, List.of()
+                1L, "Ribeye Steak", 80, 1, List.of()
         );
 
         when(userDb.findByUsername("chef123")).thenReturn(Optional.of(rater));
@@ -158,7 +158,7 @@ class FoodItemRatingServiceImplTest {
     @Test
     void given_foodItemWithNoRatings_when_getRatingSummary_then_returnsEmptySummary() {
         FoodItemRatingSummaryDomain expected = new FoodItemRatingSummaryDomain(
-                1L, "Ribeye Steak", 0, 0, 0, 0, 0, 0, List.of()
+                1L, "Ribeye Steak", 0, 0, List.of()
         );
 
         when(userDb.findByUsername("chef123")).thenReturn(Optional.of(rater));

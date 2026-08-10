@@ -56,13 +56,13 @@ class RestaurantRatingServiceImplTest {
     private final GroupEntity group = new GroupEntity("Foodies");
     private final RestaurantEntity restaurant = new RestaurantEntity("The Diner", "123 Main St", group, null, null, null);
     private final UserEntity rater = new UserEntity("chef123", "hashedPassword", "Chef");
-    private final RateRestaurantDisplay rateRequest = new RateRestaurantDisplay(80, 70, 90, 60, 50, 45);
+    private final RateRestaurantDisplay rateRequest = new RateRestaurantDisplay(80, 70, 90);
 
     @Test
     void given_memberWithNoExistingRating_when_rateRestaurant_then_createsNewRatingAndReturnsDomain() {
-        RestaurantRatingEntity savedEntity = new RestaurantRatingEntity(restaurant, rater, 80, 70, 90, 60, 50, 45);
+        RestaurantRatingEntity savedEntity = new RestaurantRatingEntity(restaurant, rater, 80, 70, 90);
         RestaurantRatingDomain expected = new RestaurantRatingDomain(
-                1L, 1L, "chef123", "Chef", 80, 70, 90, 60, 50, 45, LocalDateTime.now(), LocalDateTime.now()
+                1L, 1L, "chef123", "Chef", 80, 70, 90, LocalDateTime.now(), LocalDateTime.now()
         );
 
         when(userDb.findByUsername("chef123")).thenReturn(Optional.of(rater));
@@ -79,7 +79,7 @@ class RestaurantRatingServiceImplTest {
 
     @Test
     void given_memberWithExistingRating_when_rateRestaurant_then_updatesExistingRatingInsteadOfCreatingNew() {
-        RestaurantRatingEntity existingEntity = new RestaurantRatingEntity(restaurant, rater, 10, 10, 10, 10, 10, 10);
+        RestaurantRatingEntity existingEntity = new RestaurantRatingEntity(restaurant, rater, 10, 10, 10);
 
         when(userDb.findByUsername("chef123")).thenReturn(Optional.of(rater));
         when(restaurantDb.findById(1L)).thenReturn(Optional.of(restaurant));
@@ -87,12 +87,11 @@ class RestaurantRatingServiceImplTest {
         when(restaurantRatingDb.findByRestaurantIdAndUserId(1L, rater.getId())).thenReturn(Optional.of(existingEntity));
         when(restaurantRatingDb.save(existingEntity)).thenReturn(existingEntity);
         when(restaurantRatingMapper.mapToDomain(existingEntity)).thenReturn(
-                new RestaurantRatingDomain(1L, 1L, "chef123", "Chef", 80, 70, 90, 60, 50, 45, LocalDateTime.now(), LocalDateTime.now()));
+                new RestaurantRatingDomain(1L, 1L, "chef123", "Chef", 80, 70, 90, LocalDateTime.now(), LocalDateTime.now()));
 
         restaurantRatingServiceImpl.rateRestaurant("chef123", 1L, rateRequest);
 
-        assertThat(existingEntity.getEmployeesService()).isEqualTo(80);
-        assertThat(existingEntity.getFoodQuality()).isEqualTo(45);
+        assertThat(existingEntity.getFood()).isEqualTo(80);
         verify(restaurantRatingDb, times(1)).save(existingEntity);
     }
 
@@ -138,9 +137,9 @@ class RestaurantRatingServiceImplTest {
 
     @Test
     void given_memberOfGroup_when_getRatingSummary_then_returnsSummaryDomain() {
-        RestaurantRatingEntity ratingEntity = new RestaurantRatingEntity(restaurant, rater, 80, 70, 90, 60, 50, 45);
+        RestaurantRatingEntity ratingEntity = new RestaurantRatingEntity(restaurant, rater, 80, 70, 90);
         RestaurantRatingSummaryDomain expected = new RestaurantRatingSummaryDomain(
-                1L, "The Diner", 80, 70, 90, 60, 50, 45, 65, 1, List.of()
+                1L, "The Diner", 80, 70, 90, 80, 1, List.of()
         );
 
         when(userDb.findByUsername("chef123")).thenReturn(Optional.of(rater));
@@ -157,7 +156,7 @@ class RestaurantRatingServiceImplTest {
     @Test
     void given_restaurantWithNoRatings_when_getRatingSummary_then_returnsEmptySummary() {
         RestaurantRatingSummaryDomain expected = new RestaurantRatingSummaryDomain(
-                1L, "The Diner", 0, 0, 0, 0, 0, 0, 0, 0, List.of()
+                1L, "The Diner", 0, 0, 0, 0, 0, List.of()
         );
 
         when(userDb.findByUsername("chef123")).thenReturn(Optional.of(rater));

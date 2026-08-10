@@ -21,6 +21,7 @@ import com.hasshe.foodie.dto.UserProfileDisplay;
 import com.hasshe.foodie.exception.ValidationException;
 import com.hasshe.foodie.views.components.FoodItemListDialogComponent;
 import com.hasshe.foodie.views.components.FoodItemRatingDialogComponent;
+import com.hasshe.foodie.views.components.RestaurantInfoDialogComponent;
 import com.hasshe.foodie.views.components.RestaurantRatingDialogComponent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -66,6 +67,7 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
     private final TextField websiteField = new TextField("Website");
     private final Select<GroupDisplay> groupSelect = new Select<>();
 
+    private final RestaurantInfoDialogComponent restaurantInfoDialogComponent = new RestaurantInfoDialogComponent();
     private final RestaurantRatingDialogComponent restaurantRatingDialogComponent = new RestaurantRatingDialogComponent();
     private final FoodItemListDialogComponent foodItemListDialogComponent = new FoodItemListDialogComponent();
     private final FoodItemRatingDialogComponent foodItemRatingDialogComponent = new FoodItemRatingDialogComponent();
@@ -95,9 +97,9 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
         restaurantGrid.addColumn(RestaurantDisplay::name).setHeader("Name");
         restaurantGrid.addColumn(RestaurantDisplay::address).setHeader("Address");
         restaurantGrid.addColumn(RestaurantDisplay::groupName).setHeader("Group");
-        restaurantGrid.setWidth("640px");
-        restaurantGrid.getStyle().set("align-self", "center");
-        restaurantGrid.addItemClickListener(event -> openRatingDialog(event.getItem()));
+        restaurantGrid.setWidthFull();
+        restaurantGrid.getStyle().set("max-width", "640px").set("align-self", "center");
+        restaurantGrid.addItemClickListener(event -> openRestaurantInfoDialog(event.getItem()));
 
         Button addRestaurantButton = new Button("Add restaurant", event -> openAddRestaurantDialog());
         addRestaurantButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -106,6 +108,7 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
 
         VerticalLayout card = new VerticalLayout(new H1("Restaurants"), addRestaurantButton, restaurantGrid);
         card.setAlignItems(Alignment.CENTER);
+        card.setWidthFull();
 
         add(card);
     }
@@ -227,13 +230,20 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
         }
     }
 
+    private void openRestaurantInfoDialog(RestaurantDisplay restaurantDisplay) {
+        restaurantInfoDialogComponent.open(
+                restaurantDisplay,
+                "Rate restaurant", () -> openRatingDialog(restaurantDisplay),
+                "Food items", () -> openFoodItemsDialog(restaurantDisplay)
+        );
+    }
+
     private void openRatingDialog(RestaurantDisplay restaurantDisplay) {
         RestaurantRatingSummaryDisplay restaurantRatingSummaryDisplay =
                 restaurantRatingController.getRatingSummary(currentUsername, restaurantDisplay.id());
         restaurantRatingDialogComponent.open(
                 restaurantRatingSummaryDisplay,
-                rateRestaurantDisplay -> handleRateSubmit(restaurantDisplay.id(), rateRestaurantDisplay),
-                () -> openFoodItemsDialog(restaurantDisplay)
+                rateRestaurantDisplay -> handleRateSubmit(restaurantDisplay.id(), rateRestaurantDisplay)
         );
     }
 
@@ -251,7 +261,6 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
     }
 
     private void openFoodItemsDialog(RestaurantDisplay restaurantDisplay) {
-        restaurantRatingDialogComponent.close();
         List<FoodItemDisplay> foodItems = foodItemController.listFoodItemsForRestaurant(currentUsername, restaurantDisplay.id());
         foodItemListDialogComponent.open(
                 foodItems,

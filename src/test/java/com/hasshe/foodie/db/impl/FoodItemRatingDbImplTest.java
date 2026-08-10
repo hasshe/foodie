@@ -35,7 +35,7 @@ class FoodItemRatingDbImplTest {
 
     @Test
     void given_validEntity_when_save_then_returnsSavedEntity() {
-        FoodItemRatingEntity entity = new FoodItemRatingEntity(foodItem, rater, 80, 70, 90, 60);
+        FoodItemRatingEntity entity = new FoodItemRatingEntity(foodItem, rater, 80);
         when(foodItemRatingJpaRepository.save(entity)).thenReturn(entity);
 
         FoodItemRatingEntity result = foodItemRatingDbImpl.save(entity);
@@ -45,7 +45,7 @@ class FoodItemRatingDbImplTest {
 
     @Test
     void given_anotherValidEntity_when_save_then_delegatesToRepository() {
-        FoodItemRatingEntity entity = new FoodItemRatingEntity(foodItem, rater, 10, 20, 30, 40);
+        FoodItemRatingEntity entity = new FoodItemRatingEntity(foodItem, rater, 10);
         when(foodItemRatingJpaRepository.save(entity)).thenReturn(entity);
 
         foodItemRatingDbImpl.save(entity);
@@ -61,7 +61,7 @@ class FoodItemRatingDbImplTest {
 
     @Test
     void given_existingRatingForFoodItemAndUser_when_findByFoodItemIdAndUserId_then_returnsRating() {
-        FoodItemRatingEntity entity = new FoodItemRatingEntity(foodItem, rater, 80, 70, 90, 60);
+        FoodItemRatingEntity entity = new FoodItemRatingEntity(foodItem, rater, 80);
         when(foodItemRatingJpaRepository.findByFoodItemIdAndUserId(1L, 2L)).thenReturn(Optional.of(entity));
 
         Optional<FoodItemRatingEntity> result = foodItemRatingDbImpl.findByFoodItemIdAndUserId(1L, 2L);
@@ -92,7 +92,7 @@ class FoodItemRatingDbImplTest {
 
     @Test
     void given_ratingsForFoodItem_when_findByFoodItemId_then_returnsRatings() {
-        FoodItemRatingEntity entity = new FoodItemRatingEntity(foodItem, rater, 80, 70, 90, 60);
+        FoodItemRatingEntity entity = new FoodItemRatingEntity(foodItem, rater, 80);
         when(foodItemRatingJpaRepository.findByFoodItemId(1L)).thenReturn(List.of(entity));
 
         List<FoodItemRatingEntity> result = foodItemRatingDbImpl.findByFoodItemId(1L);

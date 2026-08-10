@@ -11,6 +11,7 @@ import com.hasshe.foodie.dto.RestaurantDisplay;
 import com.hasshe.foodie.dto.UserProfileDisplay;
 import com.hasshe.foodie.exception.ValidationException;
 import com.hasshe.foodie.views.components.CheckOffPromptDialogComponent;
+import com.hasshe.foodie.views.components.RestaurantInfoDialogComponent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -54,6 +55,7 @@ public class WishlistView extends VerticalLayout implements BeforeEnterObserver 
     private final TextField websiteField = new TextField("Website");
     private final Select<GroupDisplay> groupSelect = new Select<>();
 
+    private final RestaurantInfoDialogComponent restaurantInfoDialogComponent = new RestaurantInfoDialogComponent();
     private final CheckOffPromptDialogComponent checkOffPromptDialogComponent = new CheckOffPromptDialogComponent();
 
     private String currentUsername;
@@ -75,9 +77,9 @@ public class WishlistView extends VerticalLayout implements BeforeEnterObserver 
         wishlistGrid.addColumn(RestaurantDisplay::name).setHeader("Name");
         wishlistGrid.addColumn(RestaurantDisplay::address).setHeader("Address");
         wishlistGrid.addColumn(RestaurantDisplay::groupName).setHeader("Group");
-        wishlistGrid.addComponentColumn(this::createCheckOffButton).setHeader("");
-        wishlistGrid.setWidth("720px");
-        wishlistGrid.getStyle().set("align-self", "center");
+        wishlistGrid.setWidthFull();
+        wishlistGrid.getStyle().set("max-width", "720px").set("align-self", "center");
+        wishlistGrid.addItemClickListener(event -> openRestaurantInfoDialog(event.getItem()));
 
         Button addToWishlistButton = new Button("Add to wishlist", event -> openAddToWishlistDialog());
         addToWishlistButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -86,6 +88,7 @@ public class WishlistView extends VerticalLayout implements BeforeEnterObserver 
 
         VerticalLayout card = new VerticalLayout(new H1("Wishlist"), addToWishlistButton, wishlistGrid);
         card.setAlignItems(Alignment.CENTER);
+        card.setWidthFull();
 
         add(card);
     }
@@ -100,10 +103,6 @@ public class WishlistView extends VerticalLayout implements BeforeEnterObserver 
 
     private void refreshWishlist() {
         wishlistGrid.setItems(wishlistController.listWishlistForUser(currentUsername));
-    }
-
-    private Button createCheckOffButton(RestaurantDisplay restaurantDisplay) {
-        return new Button("Check off", event -> openCheckOffPrompt(restaurantDisplay));
     }
 
     private void buildAddToWishlistDialog() {
@@ -196,6 +195,10 @@ public class WishlistView extends VerticalLayout implements BeforeEnterObserver 
             Notification errorNotification = Notification.show(e.getMessage());
             errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         }
+    }
+
+    private void openRestaurantInfoDialog(RestaurantDisplay restaurantDisplay) {
+        restaurantInfoDialogComponent.open(restaurantDisplay, "Check off", () -> openCheckOffPrompt(restaurantDisplay));
     }
 
     private void openCheckOffPrompt(RestaurantDisplay restaurantDisplay) {

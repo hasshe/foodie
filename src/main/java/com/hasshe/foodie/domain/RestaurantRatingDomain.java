@@ -7,17 +7,14 @@ public record RestaurantRatingDomain(
         Long restaurantId,
         String raterUsername,
         String raterDisplayName,
-        int employeesService,
-        int audioMusic,
-        int generalVibes,
-        int priceForQuality,
-        int locationLocale,
-        int foodQuality,
+        int food,
+        int service,
+        int vibe,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
 
     public double averageScore() {
-        return (employeesService + audioMusic + generalVibes + priceForQuality + locationLocale + foodQuality) / 6.0;
+        return (food + service + vibe) / 3.0;
     }
 }

@@ -138,7 +138,7 @@ class FoodItemServiceImplTest {
     void given_restaurantWithRatedFoodItem_when_listFoodItemsForRestaurant_then_returnsFoodItemsWithAverageRating() {
         FoodItemEntity entity = new FoodItemEntity(restaurant, "Ribeye Steak", "Steak");
         UserEntity secondUser = new UserEntity("foodie99", "hashedPassword", "Foodie");
-        FoodItemRatingEntity rating = new FoodItemRatingEntity(entity, secondUser, 100, 100, 100, 100);
+        FoodItemRatingEntity rating = new FoodItemRatingEntity(entity, secondUser, 100);
         FoodItemDomain domain = new FoodItemDomain(1L, 1L, "Ribeye Steak", "Steak", 100.0, 1, null, null);
 
         when(userDb.findByUsername("chef123")).thenReturn(Optional.of(user));

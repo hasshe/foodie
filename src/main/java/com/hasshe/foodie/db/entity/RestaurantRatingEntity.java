@@ -40,23 +40,14 @@ public class RestaurantRatingEntity {
     @JoinColumn(name = RestaurantRatingConstants.COLUMN_USER_ID, nullable = false)
     private UserEntity rater;
 
-    @Column(name = RestaurantRatingConstants.COLUMN_EMPLOYEES_SERVICE, nullable = false)
-    private int employeesService;
+    @Column(name = RestaurantRatingConstants.COLUMN_FOOD, nullable = false)
+    private int food;
 
-    @Column(name = RestaurantRatingConstants.COLUMN_AUDIO_MUSIC, nullable = false)
-    private int audioMusic;
+    @Column(name = RestaurantRatingConstants.COLUMN_SERVICE, nullable = false)
+    private int service;
 
-    @Column(name = RestaurantRatingConstants.COLUMN_GENERAL_VIBES, nullable = false)
-    private int generalVibes;
-
-    @Column(name = RestaurantRatingConstants.COLUMN_PRICE_FOR_QUALITY, nullable = false)
-    private int priceForQuality;
-
-    @Column(name = RestaurantRatingConstants.COLUMN_LOCATION_LOCALE, nullable = false)
-    private int locationLocale;
-
-    @Column(name = RestaurantRatingConstants.COLUMN_FOOD_QUALITY, nullable = false)
-    private int foodQuality;
+    @Column(name = RestaurantRatingConstants.COLUMN_VIBE, nullable = false)
+    private int vibe;
 
     @Column(name = RestaurantRatingConstants.COLUMN_CREATED_AT, nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -66,32 +57,17 @@ public class RestaurantRatingEntity {
 
     protected RestaurantRatingEntity() {}
 
-    public RestaurantRatingEntity(
-            RestaurantEntity restaurant,
-            UserEntity rater,
-            int employeesService,
-            int audioMusic,
-            int generalVibes,
-            int priceForQuality,
-            int locationLocale,
-            int foodQuality
-    ) {
+    public RestaurantRatingEntity(RestaurantEntity restaurant, UserEntity rater, int food, int service, int vibe) {
         Assert.notNull(restaurant, "restaurant must not be null");
         Assert.notNull(rater, "rater must not be null");
-        assertValidScore(employeesService, "employeesService");
-        assertValidScore(audioMusic, "audioMusic");
-        assertValidScore(generalVibes, "generalVibes");
-        assertValidScore(priceForQuality, "priceForQuality");
-        assertValidScore(locationLocale, "locationLocale");
-        assertValidScore(foodQuality, "foodQuality");
+        assertValidScore(food, "food");
+        assertValidScore(service, "service");
+        assertValidScore(vibe, "vibe");
         this.restaurant = restaurant;
         this.rater = rater;
-        this.employeesService = employeesService;
-        this.audioMusic = audioMusic;
-        this.generalVibes = generalVibes;
-        this.priceForQuality = priceForQuality;
-        this.locationLocale = locationLocale;
-        this.foodQuality = foodQuality;
+        this.food = food;
+        this.service = service;
+        this.vibe = vibe;
     }
 
     @PrePersist
@@ -106,19 +82,13 @@ public class RestaurantRatingEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void updateScores(int employeesService, int audioMusic, int generalVibes, int priceForQuality, int locationLocale, int foodQuality) {
-        assertValidScore(employeesService, "employeesService");
-        assertValidScore(audioMusic, "audioMusic");
-        assertValidScore(generalVibes, "generalVibes");
-        assertValidScore(priceForQuality, "priceForQuality");
-        assertValidScore(locationLocale, "locationLocale");
-        assertValidScore(foodQuality, "foodQuality");
-        this.employeesService = employeesService;
-        this.audioMusic = audioMusic;
-        this.generalVibes = generalVibes;
-        this.priceForQuality = priceForQuality;
-        this.locationLocale = locationLocale;
-        this.foodQuality = foodQuality;
+    public void updateScores(int food, int service, int vibe) {
+        assertValidScore(food, "food");
+        assertValidScore(service, "service");
+        assertValidScore(vibe, "vibe");
+        this.food = food;
+        this.service = service;
+        this.vibe = vibe;
     }
 
     private static void assertValidScore(int score, String fieldName) {
@@ -140,28 +110,16 @@ public class RestaurantRatingEntity {
         return rater;
     }
 
-    public int getEmployeesService() {
-        return employeesService;
+    public int getFood() {
+        return food;
     }
 
-    public int getAudioMusic() {
-        return audioMusic;
+    public int getService() {
+        return service;
     }
 
-    public int getGeneralVibes() {
-        return generalVibes;
-    }
-
-    public int getPriceForQuality() {
-        return priceForQuality;
-    }
-
-    public int getLocationLocale() {
-        return locationLocale;
-    }
-
-    public int getFoodQuality() {
-        return foodQuality;
+    public int getVibe() {
+        return vibe;
     }
 
     public LocalDateTime getCreatedAt() {

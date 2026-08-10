@@ -7,15 +7,7 @@ public record FoodItemRatingDomain(
         Long foodItemId,
         String raterUsername,
         String raterDisplayName,
-        int taste,
-        int presentation,
-        int portionQuality,
-        int valueForPrice,
+        int rating,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
-) {
-
-    public double averageScore() {
-        return (taste + presentation + portionQuality + valueForPrice) / 4.0;
-    }
-}
+) {}

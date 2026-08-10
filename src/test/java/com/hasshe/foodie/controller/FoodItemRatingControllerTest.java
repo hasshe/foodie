@@ -34,14 +34,14 @@ class FoodItemRatingControllerTest {
     @InjectMocks
     private FoodItemRatingController foodItemRatingController;
 
-    private final RateFoodItemDisplay rateRequest = new RateFoodItemDisplay(80, 70, 90, 60);
+    private final RateFoodItemDisplay rateRequest = new RateFoodItemDisplay(80);
 
     @Test
     void given_validRequest_when_rateFoodItem_then_returnsMappedDisplay() {
         FoodItemRatingDomain domain = new FoodItemRatingDomain(
-                1L, 1L, "chef123", "Chef", 80, 70, 90, 60, LocalDateTime.now(), LocalDateTime.now()
+                1L, 1L, "chef123", "Chef", 80, LocalDateTime.now(), LocalDateTime.now()
         );
-        FoodItemRatingDisplay display = new FoodItemRatingDisplay(1L, "Chef", 80, 70, 90, 60, 75.0);
+        FoodItemRatingDisplay display = new FoodItemRatingDisplay(1L, "Chef", 80);
         when(foodItemRatingService.rateFoodItem("chef123", 1L, rateRequest)).thenReturn(domain);
         when(foodItemRatingMapper.mapToDisplay(domain)).thenReturn(display);
 
@@ -53,11 +53,11 @@ class FoodItemRatingControllerTest {
     @Test
     void given_validRequest_when_rateFoodItem_then_delegatesToServiceExactlyOnce() {
         FoodItemRatingDomain domain = new FoodItemRatingDomain(
-                1L, 1L, "chef123", "Chef", 80, 70, 90, 60, LocalDateTime.now(), LocalDateTime.now()
+                1L, 1L, "chef123", "Chef", 80, LocalDateTime.now(), LocalDateTime.now()
         );
         when(foodItemRatingService.rateFoodItem("chef123", 1L, rateRequest)).thenReturn(domain);
         when(foodItemRatingMapper.mapToDisplay(domain)).thenReturn(
-                new FoodItemRatingDisplay(1L, "Chef", 80, 70, 90, 60, 75.0));
+                new FoodItemRatingDisplay(1L, "Chef", 80));
 
         foodItemRatingController.rateFoodItem("chef123", 1L, rateRequest);
 
@@ -94,10 +94,10 @@ class FoodItemRatingControllerTest {
     @Test
     void given_foodItemWithRatings_when_getRatingSummary_then_returnsMappedSummaryDisplay() {
         FoodItemRatingSummaryDomain domain = new FoodItemRatingSummaryDomain(
-                1L, "Ribeye Steak", 80, 70, 90, 60, 75, 1, List.of()
+                1L, "Ribeye Steak", 75, 1, List.of()
         );
         FoodItemRatingSummaryDisplay display = new FoodItemRatingSummaryDisplay(
-                1L, "Ribeye Steak", 80, 70, 90, 60, 75, 1, List.of(), null
+                1L, "Ribeye Steak", 75, 1, List.of(), null
         );
         when(foodItemRatingService.getRatingSummary("chef123", 1L)).thenReturn(domain);
         when(foodItemRatingMapper.mapToSummaryDisplay(domain, "chef123")).thenReturn(display);
@@ -110,10 +110,10 @@ class FoodItemRatingControllerTest {
     @Test
     void given_foodItemWithNoRatings_when_getRatingSummary_then_returnsEmptySummaryDisplay() {
         FoodItemRatingSummaryDomain domain = new FoodItemRatingSummaryDomain(
-                1L, "Ribeye Steak", 0, 0, 0, 0, 0, 0, List.of()
+                1L, "Ribeye Steak", 0, 0, List.of()
         );
         FoodItemRatingSummaryDisplay display = new FoodItemRatingSummaryDisplay(
-                1L, "Ribeye Steak", 0, 0, 0, 0, 0, 0, List.of(), null
+                1L, "Ribeye Steak", 0, 0, List.of(), null
         );
         when(foodItemRatingService.getRatingSummary("chef123", 1L)).thenReturn(domain);
         when(foodItemRatingMapper.mapToSummaryDisplay(domain, "chef123")).thenReturn(display);

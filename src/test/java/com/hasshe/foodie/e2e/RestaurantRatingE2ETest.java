@@ -10,6 +10,27 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 class RestaurantRatingE2ETest extends AbstractFoodieE2ETest {
 
     @Test
+    void given_restaurantSelected_when_viewingInfoDialog_then_showsFullDetailsBeforeRating() {
+        registerAndLogin("infouser1");
+        createGroup("Foodies");
+        addRestaurantWithDetails("The Diner", "123 Main St", "American", "https://thediner.example");
+
+        page.locator("vaadin-grid").getByText("The Diner").click();
+
+        Locator dialogOverlay = page.locator("vaadin-dialog-overlay");
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("The Diner"))).isVisible();
+        assertThat(dialogOverlay.getByText("123 Main St")).isVisible();
+        assertThat(dialogOverlay.getByText("American")).isVisible();
+        assertThat(dialogOverlay.getByText("https://thediner.example")).isVisible();
+        assertThat(dialogOverlay.getByText("Foodies")).isVisible();
+        assertThat(dialogOverlay.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Food items"))).isVisible();
+
+        dialogOverlay.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Rate restaurant")).click();
+
+        assertThat(page.getByText("Overall average")).isVisible();
+    }
+
+    @Test
     void given_unratedRestaurant_when_clickingRow_then_dialogShowsZeroAveragesAndAllCategories() {
         registerAndLogin("rateuser1");
         createGroup("Foodies");
@@ -19,13 +40,10 @@ class RestaurantRatingE2ETest extends AbstractFoodieE2ETest {
 
         assertThat(page.getByText("Overall average")).isVisible();
         assertThat(page.getByText("Ratings submitted")).isVisible();
-        assertThat(page.getByText("Employees & Service", new Page.GetByTextOptions().setExact(true))).isVisible();
-        assertThat(page.getByText("Audio & Music", new Page.GetByTextOptions().setExact(true))).isVisible();
-        assertThat(page.getByText("General Vibes", new Page.GetByTextOptions().setExact(true))).isVisible();
-        assertThat(page.getByText("Price for Quality", new Page.GetByTextOptions().setExact(true))).isVisible();
-        assertThat(page.getByText("Location & Locale", new Page.GetByTextOptions().setExact(true))).isVisible();
-        assertThat(page.getByText("Food Quality", new Page.GetByTextOptions().setExact(true))).isVisible();
-        assertThat(page.locator("input[type=range]")).hasCount(6);
+        assertThat(page.getByText("Food", new Page.GetByTextOptions().setExact(true))).isVisible();
+        assertThat(page.getByText("Service", new Page.GetByTextOptions().setExact(true))).isVisible();
+        assertThat(page.getByText("Vibe", new Page.GetByTextOptions().setExact(true))).isVisible();
+        assertThat(page.locator("input[type=range]")).hasCount(3);
     }
 
     @Test
@@ -49,8 +67,8 @@ class RestaurantRatingE2ETest extends AbstractFoodieE2ETest {
         addRestaurant("The Diner", "123 Main St");
 
         openRestaurant("The Diner");
-        Locator employeesServiceSlider = page.locator("input[type=range]").nth(0);
-        employeesServiceSlider.evaluate("el => { el.value = 90; el.dispatchEvent(new Event('input', { bubbles: true })); }");
+        Locator foodSlider = page.locator("input[type=range]").nth(0);
+        foodSlider.evaluate("el => { el.value = 90; el.dispatchEvent(new Event('input', { bubbles: true })); }");
         assertThat(page.getByText("90", new Page.GetByTextOptions().setExact(true))).isVisible();
 
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Save rating")).click();
@@ -59,7 +77,7 @@ class RestaurantRatingE2ETest extends AbstractFoodieE2ETest {
 
         openRestaurant("The Diner");
 
-        assertThat(employeesServiceSlider).hasValue("90");
+        assertThat(foodSlider).hasValue("90");
     }
 
     @Test
@@ -73,8 +91,8 @@ class RestaurantRatingE2ETest extends AbstractFoodieE2ETest {
         assertThat(page.getByText("Rating saved.")).isVisible();
         assertThat(page.getByText("1", new Page.GetByTextOptions().setExact(true))).isVisible();
 
-        Locator employeesServiceSlider = page.locator("input[type=range]").nth(0);
-        employeesServiceSlider.evaluate("el => { el.value = 100; el.dispatchEvent(new Event('input', { bubbles: true })); }");
+        Locator foodSlider = page.locator("input[type=range]").nth(0);
+        foodSlider.evaluate("el => { el.value = 100; el.dispatchEvent(new Event('input', { bubbles: true })); }");
         assertThat(page.getByText("100", new Page.GetByTextOptions().setExact(true))).isVisible();
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Save rating")).click();
 
@@ -88,15 +106,11 @@ class RestaurantRatingE2ETest extends AbstractFoodieE2ETest {
         createGroup("Foodies");
         addRestaurant("The Diner", "123 Main St");
 
-        openRestaurant("The Diner");
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Food items")).click();
+        openRestaurantFoodItems("The Diner");
 
         assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Food items"))).isVisible();
-        assertThat(page.getByText("Taste", new Page.GetByTextOptions().setExact(true))).isVisible();
-        assertThat(page.getByText("Presentation", new Page.GetByTextOptions().setExact(true))).isVisible();
-        assertThat(page.getByText("Portion Quality", new Page.GetByTextOptions().setExact(true))).isVisible();
-        assertThat(page.getByText("Value for Price", new Page.GetByTextOptions().setExact(true))).isVisible();
-        assertThat(page.locator("input[type=range]:visible")).hasCount(4);
+        assertThat(page.getByText("Rating", new Page.GetByTextOptions().setExact(true))).isVisible();
+        assertThat(page.locator("input[type=range]:visible")).hasCount(1);
 
         page.getByLabel("Name").fill("Ribeye Steak");
         page.getByLabel("Dish category").fill("Steak");
@@ -117,13 +131,14 @@ class RestaurantRatingE2ETest extends AbstractFoodieE2ETest {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Save rating")).click();
         assertThat(page.getByText("Rating saved.")).isVisible();
         assertThat(page.getByText("50.0").first()).isVisible();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Close")).click();
 
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Food items")).click();
+        openRestaurantFoodItems("The Diner");
         assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Food items"))).isVisible();
-        assertThat(page.locator("input[type=range]:visible")).hasCount(4);
+        assertThat(page.locator("input[type=range]:visible")).hasCount(1);
 
-        Locator tasteSlider = page.locator("input[type=range]:visible").nth(0);
-        tasteSlider.evaluate("el => { el.value = 95; el.dispatchEvent(new Event('input', { bubbles: true })); }");
+        Locator ratingSlider = page.locator("input[type=range]:visible").nth(0);
+        ratingSlider.evaluate("el => { el.value = 95; el.dispatchEvent(new Event('input', { bubbles: true })); }");
         assertThat(page.getByText("95", new Page.GetByTextOptions().setExact(true))).isVisible();
 
         page.getByLabel("Name").fill("Ribeye Steak");
@@ -165,7 +180,28 @@ class RestaurantRatingE2ETest extends AbstractFoodieE2ETest {
         assertThat(page.getByText("Restaurant added.")).isVisible();
     }
 
+    private void addRestaurantWithDetails(String name, String address, String cuisineType, String website) {
+        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Restaurants")).click();
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Restaurants"))).isVisible();
+
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add restaurant")).click();
+        page.getByLabel("Name").fill(name);
+        page.getByLabel("Address").fill(address);
+        page.getByLabel("Cuisine type").fill(cuisineType);
+        page.getByLabel("Website").fill(website);
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add").setExact(true)).click();
+        assertThat(page.getByText("Restaurant added.")).isVisible();
+    }
+
     private void openRestaurant(String name) {
         page.locator("vaadin-grid").getByText(name).click();
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName(name))).isVisible();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Rate restaurant")).click();
+    }
+
+    private void openRestaurantFoodItems(String name) {
+        page.locator("vaadin-grid").getByText(name).click();
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName(name))).isVisible();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Food items")).click();
     }
 }

@@ -23,12 +23,9 @@ class RestaurantRatingMapperImpl implements RestaurantRatingMapper {
                 restaurantRatingEntity.getRestaurant().getId(),
                 restaurantRatingEntity.getRater().getUsername(),
                 restaurantRatingEntity.getRater().getDisplayName(),
-                restaurantRatingEntity.getEmployeesService(),
-                restaurantRatingEntity.getAudioMusic(),
-                restaurantRatingEntity.getGeneralVibes(),
-                restaurantRatingEntity.getPriceForQuality(),
-                restaurantRatingEntity.getLocationLocale(),
-                restaurantRatingEntity.getFoodQuality(),
+                restaurantRatingEntity.getFood(),
+                restaurantRatingEntity.getService(),
+                restaurantRatingEntity.getVibe(),
                 restaurantRatingEntity.getCreatedAt(),
                 restaurantRatingEntity.getUpdatedAt()
         );
@@ -42,12 +39,9 @@ class RestaurantRatingMapperImpl implements RestaurantRatingMapper {
         RestaurantRatingDisplay restaurantRatingDisplay = new RestaurantRatingDisplay(
                 restaurantRatingDomain.id(),
                 restaurantRatingDomain.raterDisplayName(),
-                restaurantRatingDomain.employeesService(),
-                restaurantRatingDomain.audioMusic(),
-                restaurantRatingDomain.generalVibes(),
-                restaurantRatingDomain.priceForQuality(),
-                restaurantRatingDomain.locationLocale(),
-                restaurantRatingDomain.foodQuality(),
+                restaurantRatingDomain.food(),
+                restaurantRatingDomain.service(),
+                restaurantRatingDomain.vibe(),
                 restaurantRatingDomain.averageScore()
         );
         assert restaurantRatingDisplay != null : "mapping must never produce null";
@@ -61,25 +55,19 @@ class RestaurantRatingMapperImpl implements RestaurantRatingMapper {
 
         List<RestaurantRatingDomain> ratingDomains = restaurantRatingEntities.stream().map(this::mapToDomain).toList();
         int ratingCount = ratingDomains.size();
-        double averageEmployeesService = average(ratingDomains, RestaurantRatingDomain::employeesService);
-        double averageAudioMusic = average(ratingDomains, RestaurantRatingDomain::audioMusic);
-        double averageGeneralVibes = average(ratingDomains, RestaurantRatingDomain::generalVibes);
-        double averagePriceForQuality = average(ratingDomains, RestaurantRatingDomain::priceForQuality);
-        double averageLocationLocale = average(ratingDomains, RestaurantRatingDomain::locationLocale);
-        double averageFoodQuality = average(ratingDomains, RestaurantRatingDomain::foodQuality);
+        double averageFood = average(ratingDomains, RestaurantRatingDomain::food);
+        double averageService = average(ratingDomains, RestaurantRatingDomain::service);
+        double averageVibe = average(ratingDomains, RestaurantRatingDomain::vibe);
         double overallAverage = ratingCount == 0
                 ? 0.0
-                : (averageEmployeesService + averageAudioMusic + averageGeneralVibes + averagePriceForQuality + averageLocationLocale + averageFoodQuality) / 6.0;
+                : (averageFood + averageService + averageVibe) / 3.0;
 
         RestaurantRatingSummaryDomain restaurantRatingSummaryDomain = new RestaurantRatingSummaryDomain(
                 restaurantEntity.getId(),
                 restaurantEntity.getName(),
-                averageEmployeesService,
-                averageAudioMusic,
-                averageGeneralVibes,
-                averagePriceForQuality,
-                averageLocationLocale,
-                averageFoodQuality,
+                averageFood,
+                averageService,
+                averageVibe,
                 overallAverage,
                 ratingCount,
                 ratingDomains
@@ -103,12 +91,9 @@ class RestaurantRatingMapperImpl implements RestaurantRatingMapper {
         RestaurantRatingSummaryDisplay restaurantRatingSummaryDisplay = new RestaurantRatingSummaryDisplay(
                 restaurantRatingSummaryDomain.restaurantId(),
                 restaurantRatingSummaryDomain.restaurantName(),
-                restaurantRatingSummaryDomain.averageEmployeesService(),
-                restaurantRatingSummaryDomain.averageAudioMusic(),
-                restaurantRatingSummaryDomain.averageGeneralVibes(),
-                restaurantRatingSummaryDomain.averagePriceForQuality(),
-                restaurantRatingSummaryDomain.averageLocationLocale(),
-                restaurantRatingSummaryDomain.averageFoodQuality(),
+                restaurantRatingSummaryDomain.averageFood(),
+                restaurantRatingSummaryDomain.averageService(),
+                restaurantRatingSummaryDomain.averageVibe(),
                 restaurantRatingSummaryDomain.overallAverage(),
                 restaurantRatingSummaryDomain.ratingCount(),
                 ratingDisplays,

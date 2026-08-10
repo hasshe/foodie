@@ -106,7 +106,7 @@ class FoodItemServiceImpl implements FoodItemService {
             return 0.0;
         }
         return ratingEntities.stream()
-                .mapToDouble(rating -> (rating.getTaste() + rating.getPresentation() + rating.getPortionQuality() + rating.getValueForPrice()) / 4.0)
+                .mapToInt(FoodItemRatingEntity::getRating)
                 .average()
                 .orElse(0.0);
     }

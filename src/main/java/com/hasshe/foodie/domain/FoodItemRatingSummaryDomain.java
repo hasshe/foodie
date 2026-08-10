@@ -5,11 +5,7 @@ import java.util.List;
 public record FoodItemRatingSummaryDomain(
         Long foodItemId,
         String foodItemName,
-        double averageTaste,
-        double averagePresentation,
-        double averagePortionQuality,
-        double averageValueForPrice,
-        double overallAverage,
+        double averageRating,
         int ratingCount,
         List<FoodItemRatingDomain> ratings
 ) {}

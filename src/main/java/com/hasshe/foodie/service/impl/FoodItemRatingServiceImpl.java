@@ -64,22 +64,10 @@ class FoodItemRatingServiceImpl implements FoodItemRatingService {
 
         FoodItemRatingEntity ratingEntity = foodItemRatingDb.findByFoodItemIdAndUserId(foodItemId, rater.getId())
                 .map(existing -> {
-                    existing.updateScores(
-                            rateFoodItemDisplay.taste(),
-                            rateFoodItemDisplay.presentation(),
-                            rateFoodItemDisplay.portionQuality(),
-                            rateFoodItemDisplay.valueForPrice()
-                    );
+                    existing.updateScore(rateFoodItemDisplay.rating());
                     return existing;
                 })
-                .orElseGet(() -> new FoodItemRatingEntity(
-                        foodItem,
-                        rater,
-                        rateFoodItemDisplay.taste(),
-                        rateFoodItemDisplay.presentation(),
-                        rateFoodItemDisplay.portionQuality(),
-                        rateFoodItemDisplay.valueForPrice()
-                ));
+                .orElseGet(() -> new FoodItemRatingEntity(foodItem, rater, rateFoodItemDisplay.rating()));
 
         FoodItemRatingEntity savedRatingEntity = foodItemRatingDb.save(ratingEntity);
 

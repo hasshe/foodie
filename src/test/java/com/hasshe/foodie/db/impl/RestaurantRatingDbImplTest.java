@@ -33,7 +33,7 @@ class RestaurantRatingDbImplTest {
 
     @Test
     void given_validEntity_when_save_then_returnsSavedEntity() {
-        RestaurantRatingEntity entity = new RestaurantRatingEntity(restaurant, rater, 80, 70, 90, 60, 50, 45);
+        RestaurantRatingEntity entity = new RestaurantRatingEntity(restaurant, rater, 80, 70, 90);
         when(restaurantRatingJpaRepository.save(entity)).thenReturn(entity);
 
         RestaurantRatingEntity result = restaurantRatingDbImpl.save(entity);
@@ -43,7 +43,7 @@ class RestaurantRatingDbImplTest {
 
     @Test
     void given_anotherValidEntity_when_save_then_delegatesToRepository() {
-        RestaurantRatingEntity entity = new RestaurantRatingEntity(restaurant, rater, 10, 20, 30, 40, 50, 60);
+        RestaurantRatingEntity entity = new RestaurantRatingEntity(restaurant, rater, 10, 20, 30);
         when(restaurantRatingJpaRepository.save(entity)).thenReturn(entity);
 
         restaurantRatingDbImpl.save(entity);
@@ -59,7 +59,7 @@ class RestaurantRatingDbImplTest {
 
     @Test
     void given_existingRatingForRestaurantAndUser_when_findByRestaurantIdAndUserId_then_returnsRating() {
-        RestaurantRatingEntity entity = new RestaurantRatingEntity(restaurant, rater, 80, 70, 90, 60, 50, 45);
+        RestaurantRatingEntity entity = new RestaurantRatingEntity(restaurant, rater, 80, 70, 90);
         when(restaurantRatingJpaRepository.findByRestaurantIdAndUserId(1L, 2L)).thenReturn(Optional.of(entity));
 
         Optional<RestaurantRatingEntity> result = restaurantRatingDbImpl.findByRestaurantIdAndUserId(1L, 2L);
@@ -90,7 +90,7 @@ class RestaurantRatingDbImplTest {
 
     @Test
     void given_ratingsForRestaurant_when_findByRestaurantId_then_returnsRatings() {
-        RestaurantRatingEntity entity = new RestaurantRatingEntity(restaurant, rater, 80, 70, 90, 60, 50, 45);
+        RestaurantRatingEntity entity = new RestaurantRatingEntity(restaurant, rater, 80, 70, 90);
         when(restaurantRatingJpaRepository.findByRestaurantId(1L)).thenReturn(List.of(entity));
 
         List<RestaurantRatingEntity> result = restaurantRatingDbImpl.findByRestaurantId(1L);
