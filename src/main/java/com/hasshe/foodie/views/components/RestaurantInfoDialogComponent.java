@@ -27,6 +27,7 @@ public class RestaurantInfoDialogComponent {
 
     public RestaurantInfoDialogComponent() {
         dialog.setWidth("360px");
+        new DialogCloseButtonComponent(dialog);
 
         infoLayout.setPadding(false);
         infoLayout.setSpacing(false);
@@ -41,8 +42,7 @@ public class RestaurantInfoDialogComponent {
             dialog.close();
             secondaryActionListener.onAction();
         });
-        Button closeButton = new Button("Close", event -> dialog.close());
-        HorizontalLayout buttons = new HorizontalLayout(actionButton, secondaryActionButton, closeButton);
+        HorizontalLayout buttons = new HorizontalLayout(actionButton, secondaryActionButton);
         buttons.setWidthFull();
         buttons.getStyle().set("flex-wrap", "wrap");
 

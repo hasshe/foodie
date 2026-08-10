@@ -25,6 +25,7 @@ public class CheckOffPromptDialogComponent {
 
     public CheckOffPromptDialogComponent() {
         dialog.setWidth("420px");
+        new DialogCloseButtonComponent(dialog);
 
         Span message = new Span("Would you like to rate it now, or later from the Restaurants page?");
 

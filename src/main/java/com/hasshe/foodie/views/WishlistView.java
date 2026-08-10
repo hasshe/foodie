@@ -11,6 +11,7 @@ import com.hasshe.foodie.dto.RestaurantDisplay;
 import com.hasshe.foodie.dto.UserProfileDisplay;
 import com.hasshe.foodie.exception.ValidationException;
 import com.hasshe.foodie.views.components.CheckOffPromptDialogComponent;
+import com.hasshe.foodie.views.components.DialogCloseButtonComponent;
 import com.hasshe.foodie.views.components.RestaurantInfoDialogComponent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -107,6 +108,7 @@ public class WishlistView extends VerticalLayout implements BeforeEnterObserver 
 
     private void buildAddToWishlistDialog() {
         addToWishlistDialog.setHeaderTitle("Add to wishlist");
+        new DialogCloseButtonComponent(addToWishlistDialog);
 
         nameField.setRequiredIndicatorVisible(true);
         nameField.setMaxLength(RestaurantConstants.NAME_MAX_LENGTH);

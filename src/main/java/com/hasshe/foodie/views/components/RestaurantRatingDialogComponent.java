@@ -38,6 +38,7 @@ public class RestaurantRatingDialogComponent {
 
     public RestaurantRatingDialogComponent() {
         dialog.setWidth("360px");
+        new DialogCloseButtonComponent(dialog);
 
         HorizontalLayout overallRow = new HorizontalLayout(new Span("Overall average"), overallAverageValue);
         overallRow.setWidthFull();
@@ -53,8 +54,7 @@ public class RestaurantRatingDialogComponent {
 
         Button saveButton = new Button("Save rating", event -> handleSave());
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        Button closeButton = new Button("Close", event -> dialog.close());
-        HorizontalLayout buttons = new HorizontalLayout(saveButton, closeButton);
+        HorizontalLayout buttons = new HorizontalLayout(saveButton);
         buttons.setWidthFull();
         buttons.getStyle().set("flex-wrap", "wrap");
 

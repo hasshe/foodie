@@ -19,6 +19,7 @@ import com.hasshe.foodie.dto.RestaurantDisplay;
 import com.hasshe.foodie.dto.RestaurantRatingSummaryDisplay;
 import com.hasshe.foodie.dto.UserProfileDisplay;
 import com.hasshe.foodie.exception.ValidationException;
+import com.hasshe.foodie.views.components.DialogCloseButtonComponent;
 import com.hasshe.foodie.views.components.FoodItemListDialogComponent;
 import com.hasshe.foodie.views.components.FoodItemRatingDialogComponent;
 import com.hasshe.foodie.views.components.RestaurantInfoDialogComponent;
@@ -140,6 +141,7 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
 
     private void buildAddRestaurantDialog() {
         addRestaurantDialog.setHeaderTitle("Add restaurant");
+        new DialogCloseButtonComponent(addRestaurantDialog);
 
         nameField.setRequiredIndicatorVisible(true);
         nameField.setMaxLength(RestaurantConstants.NAME_MAX_LENGTH);

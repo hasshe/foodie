@@ -41,6 +41,7 @@ public class FoodItemListDialogComponent {
     public FoodItemListDialogComponent() {
         dialog.setHeaderTitle("Food items");
         dialog.setWidth("420px");
+        new DialogCloseButtonComponent(dialog);
 
         foodItemGrid.addColumn(FoodItemDisplay::name).setHeader("Name");
         foodItemGrid.addColumn(FoodItemDisplay::dishCategory).setHeader("Category");
@@ -54,7 +55,6 @@ public class FoodItemListDialogComponent {
 
         Button addButton = new Button("Add food item", event -> handleAdd());
         addButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        Button closeButton = new Button("Close", event -> dialog.close());
 
         VerticalLayout formLayout = new VerticalLayout(
                 nameField,
@@ -65,7 +65,7 @@ public class FoodItemListDialogComponent {
         );
         formLayout.setPadding(false);
 
-        VerticalLayout content = new VerticalLayout(foodItemGrid, new Hr(), formLayout, closeButton);
+        VerticalLayout content = new VerticalLayout(foodItemGrid, new Hr(), formLayout);
         content.setPadding(false);
         dialog.add(content);
     }
