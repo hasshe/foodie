@@ -40,8 +40,8 @@ class ProfileControllerTest {
 
     @Test
     void given_existingUsername_when_getProfile_then_returnsMappedDisplay() {
-        UserDomain domain = new UserDomain(1L, "chef123", "Chef", null, null, null);
-        UserProfileDisplay display = new UserProfileDisplay("chef123", "Chef", null);
+        UserDomain domain = new UserDomain(1L, "chef123", "Chef", null, null, null, null);
+        UserProfileDisplay display = new UserProfileDisplay("chef123", "Chef", null, null);
         when(userService.findByUsername("chef123")).thenReturn(Optional.of(domain));
         when(userMapper.mapToDisplay(domain)).thenReturn(display);
 
@@ -89,8 +89,8 @@ class ProfileControllerTest {
     @Test
     void given_validRequest_when_updateProfile_then_returnsMappedDisplay() {
         UpdateProfileDisplay request = new UpdateProfileDisplay("chef123", "Master Chef", null);
-        UserDomain domain = new UserDomain(1L, "chef123", "Master Chef", null, null, null);
-        UserProfileDisplay display = new UserProfileDisplay("chef123", "Master Chef", null);
+        UserDomain domain = new UserDomain(1L, "chef123", "Master Chef", null, null, null, null);
+        UserProfileDisplay display = new UserProfileDisplay("chef123", "Master Chef", null, null);
         when(userService.updateProfile("chef123", request)).thenReturn(domain);
         when(userMapper.mapToDisplay(domain)).thenReturn(display);
 
@@ -102,9 +102,9 @@ class ProfileControllerTest {
     @Test
     void given_validRequest_when_updateProfile_then_callsServiceExactlyOnce() {
         UpdateProfileDisplay request = new UpdateProfileDisplay("chef123", "Master Chef", null);
-        UserDomain domain = new UserDomain(1L, "chef123", "Master Chef", null, null, null);
+        UserDomain domain = new UserDomain(1L, "chef123", "Master Chef", null, null, null, null);
         when(userService.updateProfile("chef123", request)).thenReturn(domain);
-        when(userMapper.mapToDisplay(domain)).thenReturn(new UserProfileDisplay("chef123", "Master Chef", null));
+        when(userMapper.mapToDisplay(domain)).thenReturn(new UserProfileDisplay("chef123", "Master Chef", null, null));
 
         profileController.updateProfile("chef123", request);
 
@@ -154,6 +154,35 @@ class ProfileControllerTest {
         ChangePasswordDisplay request = new ChangePasswordDisplay("oldPassword", "newPassword123");
 
         assertThatThrownBy(() -> profileController.changePassword("  ", request))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void given_validGroupId_when_setDefaultGroup_then_returnsMappedDisplay() {
+        UserDomain domain = new UserDomain(1L, "chef123", "Chef", null, null, null, null);
+        UserProfileDisplay display = new UserProfileDisplay("chef123", "Chef", null, null);
+        when(userService.setDefaultGroup("chef123", 1L)).thenReturn(domain);
+        when(userMapper.mapToDisplay(domain)).thenReturn(display);
+
+        UserProfileDisplay result = profileController.setDefaultGroup("chef123", 1L);
+
+        assertThat(result).isEqualTo(display);
+    }
+
+    @Test
+    void given_nullGroupId_when_setDefaultGroup_then_delegatesToServiceWithNull() {
+        UserDomain domain = new UserDomain(1L, "chef123", "Chef", null, null, null, null);
+        when(userService.setDefaultGroup("chef123", null)).thenReturn(domain);
+        when(userMapper.mapToDisplay(domain)).thenReturn(new UserProfileDisplay("chef123", "Chef", null, null));
+
+        profileController.setDefaultGroup("chef123", null);
+
+        verify(userService).setDefaultGroup("chef123", null);
+    }
+
+    @Test
+    void given_blankUsername_when_setDefaultGroup_then_throwsIllegalArgumentException() {
+        assertThatThrownBy(() -> profileController.setDefaultGroup("  ", 1L))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }

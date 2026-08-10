@@ -1,7 +1,9 @@
 package com.hasshe.foodie.service.impl;
 
+import com.hasshe.foodie.db.api.GroupDb;
 import com.hasshe.foodie.db.api.UserDb;
 import com.hasshe.foodie.db.api.UserIconDb;
+import com.hasshe.foodie.db.entity.GroupEntity;
 import com.hasshe.foodie.db.entity.UserEntity;
 import com.hasshe.foodie.db.entity.UserIconEntity;
 import com.hasshe.foodie.domain.UserDomain;
@@ -30,6 +32,7 @@ class UserServiceImpl implements UserService {
 
     private final UserDb userDb;
     private final UserIconDb userIconDb;
+    private final GroupDb groupDb;
     private final UserMapper userMapper;
     private final UserIconMapper userIconMapper;
     private final PasswordEncoder passwordEncoder;
@@ -37,12 +40,14 @@ class UserServiceImpl implements UserService {
     UserServiceImpl(
             UserDb userDb,
             UserIconDb userIconDb,
+            GroupDb groupDb,
             UserMapper userMapper,
             UserIconMapper userIconMapper,
             PasswordEncoder passwordEncoder
     ) {
         this.userDb = userDb;
         this.userIconDb = userIconDb;
+        this.groupDb = groupDb;
         this.userMapper = userMapper;
         this.userIconMapper = userIconMapper;
         this.passwordEncoder = passwordEncoder;
@@ -131,5 +136,31 @@ class UserServiceImpl implements UserService {
         userEntity.changePassword(passwordEncoder.encode(changePasswordDisplay.newPassword()));
         userDb.save(userEntity);
         log.info("Changed password for username {}", username);
+    }
+
+    @Override
+    public UserDomain setDefaultGroup(String username, Long groupId) {
+        Assert.hasText(username, "username must not be blank");
+        log.debug("Setting default group for username {} to groupId {}", username, groupId);
+
+        UserEntity userEntity = userDb.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("No user found with username: " + username));
+
+        if (groupId == null) {
+            userEntity.clearDefaultGroup();
+        } else {
+            if (!groupDb.isMember(groupId, userEntity.getId())) {
+                throw new ValidationException("You must be a member of the group to set it as default");
+            }
+            GroupEntity groupEntity = groupDb.findById(groupId)
+                    .orElseThrow(() -> new NotFoundException("No group found with id: " + groupId));
+            userEntity.changeDefaultGroup(groupEntity);
+        }
+
+        UserEntity savedUserEntity = userDb.save(userEntity);
+        UserDomain userDomain = userMapper.mapToDomain(savedUserEntity);
+        assert userDomain != null : "mapper must never return null";
+        log.info("Set default group for username {} to groupId {}", username, groupId);
+        return userDomain;
     }
 }

@@ -184,4 +184,58 @@ class UserEntityTest {
 
         assertThat(entity.getUserIcon()).isEmpty();
     }
+
+    @Test
+    void given_noDefaultGroupSet_when_getDefaultGroup_then_returnsEmptyOptional() {
+        UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
+
+        assertThat(entity.getDefaultGroup()).isEmpty();
+    }
+
+    @Test
+    void given_validGroup_when_changeDefaultGroup_then_getDefaultGroupReturnsIt() {
+        UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
+        GroupEntity group = new GroupEntity("Foodies");
+
+        entity.changeDefaultGroup(group);
+
+        assertThat(entity.getDefaultGroup()).contains(group);
+    }
+
+    @Test
+    void given_anotherValidGroup_when_changeDefaultGroup_then_getDefaultGroupReturnsIt() {
+        UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
+        GroupEntity group = new GroupEntity("Weekend Warriors");
+
+        entity.changeDefaultGroup(group);
+
+        assertThat(entity.getDefaultGroup()).contains(group);
+    }
+
+    @Test
+    void given_nullGroup_when_changeDefaultGroup_then_throwsIllegalArgumentException() {
+        UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
+
+        assertThatThrownBy(() -> entity.changeDefaultGroup(null))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void given_defaultGroupPreviouslySet_when_clearDefaultGroup_then_getDefaultGroupReturnsEmptyOptional() {
+        UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
+        entity.changeDefaultGroup(new GroupEntity("Foodies"));
+
+        entity.clearDefaultGroup();
+
+        assertThat(entity.getDefaultGroup()).isEmpty();
+    }
+
+    @Test
+    void given_noDefaultGroupSet_when_clearDefaultGroup_then_getDefaultGroupStaysEmpty() {
+        UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
+
+        entity.clearDefaultGroup();
+
+        assertThat(entity.getDefaultGroup()).isEmpty();
+    }
 }

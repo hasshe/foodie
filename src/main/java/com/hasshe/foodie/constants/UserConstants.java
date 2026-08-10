@@ -13,6 +13,7 @@ public final class UserConstants {
     public static final String COLUMN_CREATED_AT = "created_at";
     public static final String COLUMN_UPDATED_AT = "updated_at";
     public static final String COLUMN_USER_ICON_ID = "user_icon_id";
+    public static final String COLUMN_DEFAULT_GROUP_ID = "default_group_id";
 
     public static final int USERNAME_MAX_LENGTH = 50;
     public static final int PASSWORD_MIN_LENGTH = 8;

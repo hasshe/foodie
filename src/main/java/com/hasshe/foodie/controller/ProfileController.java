@@ -48,4 +48,10 @@ public class ProfileController {
         Assert.notNull(changePasswordDisplay, "changePasswordDisplay must not be null");
         userService.changePassword(username, changePasswordDisplay);
     }
+
+    public UserProfileDisplay setDefaultGroup(String username, Long groupId) {
+        Assert.hasText(username, "username must not be blank");
+        UserDomain updatedUserDomain = userService.setDefaultGroup(username, groupId);
+        return userMapper.mapToDisplay(updatedUserDomain);
+    }
 }

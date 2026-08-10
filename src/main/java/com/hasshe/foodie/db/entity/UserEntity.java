@@ -45,6 +45,10 @@ public class UserEntity {
     @JoinColumn(name = UserConstants.COLUMN_USER_ICON_ID)
     private UserIconEntity userIcon;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = UserConstants.COLUMN_DEFAULT_GROUP_ID)
+    private GroupEntity defaultGroup;
+
     protected UserEntity() {}
 
     public UserEntity(String username, String password, String displayName) {
@@ -96,6 +100,10 @@ public class UserEntity {
         return Optional.ofNullable(userIcon);
     }
 
+    public Optional<GroupEntity> getDefaultGroup() {
+        return Optional.ofNullable(defaultGroup);
+    }
+
     public void changeUsername(String newUsername) {
         Assert.hasText(newUsername, "newUsername must not be blank");
         this.username = newUsername;
@@ -118,5 +126,14 @@ public class UserEntity {
 
     public void clearUserIcon() {
         this.userIcon = null;
+    }
+
+    public void changeDefaultGroup(GroupEntity newDefaultGroup) {
+        Assert.notNull(newDefaultGroup, "newDefaultGroup must not be null");
+        this.defaultGroup = newDefaultGroup;
+    }
+
+    public void clearDefaultGroup() {
+        this.defaultGroup = null;
     }
 }

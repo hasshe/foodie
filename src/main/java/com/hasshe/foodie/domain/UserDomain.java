@@ -7,6 +7,7 @@ public record UserDomain(
         String username,
         String displayName,
         UserIconDomain userIcon,
+        GroupDomain defaultGroup,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {}

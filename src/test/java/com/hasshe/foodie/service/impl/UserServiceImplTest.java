@@ -1,8 +1,10 @@
 package com.hasshe.foodie.service.impl;
 
 import com.hasshe.foodie.constants.UserConstants;
+import com.hasshe.foodie.db.api.GroupDb;
 import com.hasshe.foodie.db.api.UserDb;
 import com.hasshe.foodie.db.api.UserIconDb;
+import com.hasshe.foodie.db.entity.GroupEntity;
 import com.hasshe.foodie.db.entity.UserEntity;
 import com.hasshe.foodie.db.entity.UserIconEntity;
 import com.hasshe.foodie.domain.UserDomain;
@@ -43,6 +45,9 @@ class UserServiceImplTest {
     private UserIconDb userIconDb;
 
     @Mock
+    private GroupDb groupDb;
+
+    @Mock
     private UserMapper userMapper;
 
     @Mock
@@ -58,7 +63,7 @@ class UserServiceImplTest {
     void given_newUsername_when_registerUser_then_returnsRegisteredDomain() {
         RegisterUserDisplay request = new RegisterUserDisplay("chef123", "rawPassword", "Chef");
         UserEntity savedEntity = new UserEntity("chef123", "encodedPassword", "Chef");
-        UserDomain expectedDomain = new UserDomain(1L, "chef123", "Chef", null, LocalDateTime.now(), LocalDateTime.now());
+        UserDomain expectedDomain = new UserDomain(1L, "chef123", "Chef", null, null, LocalDateTime.now(), LocalDateTime.now());
 
         when(userDb.existsByUsername("chef123")).thenReturn(false);
         when(passwordEncoder.encode("rawPassword")).thenReturn("encodedPassword");
@@ -79,7 +84,7 @@ class UserServiceImplTest {
         when(passwordEncoder.encode("rawPassword")).thenReturn("encodedPassword");
         when(userDb.save(any(UserEntity.class))).thenReturn(savedEntity);
         when(userMapper.mapToDomain(savedEntity)).thenReturn(
-                new UserDomain(2L, "foodie99", "Foodie", null, LocalDateTime.now(), LocalDateTime.now()));
+                new UserDomain(2L, "foodie99", "Foodie", null, null, LocalDateTime.now(), LocalDateTime.now()));
 
         userServiceImpl.registerUser(request);
 
@@ -121,7 +126,7 @@ class UserServiceImplTest {
         when(passwordEncoder.encode("rawPassword")).thenReturn("encodedPassword");
         when(userDb.save(any(UserEntity.class))).thenReturn(savedEntity);
         when(userMapper.mapToDomain(savedEntity)).thenReturn(
-                new UserDomain(3L, "chef123", maxLengthDisplayName, null, LocalDateTime.now(), LocalDateTime.now()));
+                new UserDomain(3L, "chef123", maxLengthDisplayName, null, null, LocalDateTime.now(), LocalDateTime.now()));
 
         UserDomain result = userServiceImpl.registerUser(request);
 
@@ -137,7 +142,7 @@ class UserServiceImplTest {
         when(passwordEncoder.encode("rawPassword")).thenReturn("encodedPassword");
         when(userDb.save(any(UserEntity.class))).thenReturn(savedEntity);
         when(userMapper.mapToDomain(savedEntity)).thenReturn(
-                new UserDomain(1L, "chef123", "Chef", null, LocalDateTime.now(), LocalDateTime.now()));
+                new UserDomain(1L, "chef123", "Chef", null, null, LocalDateTime.now(), LocalDateTime.now()));
 
         userServiceImpl.registerUser(request);
 
@@ -147,7 +152,7 @@ class UserServiceImplTest {
     @Test
     void given_existingUsername_when_findByUsername_then_returnsDomain() {
         UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
-        UserDomain domain = new UserDomain(1L, "chef123", "Chef", null, LocalDateTime.now(), LocalDateTime.now());
+        UserDomain domain = new UserDomain(1L, "chef123", "Chef", null, null, LocalDateTime.now(), LocalDateTime.now());
         when(userDb.findByUsername("chef123")).thenReturn(Optional.of(entity));
         when(userMapper.mapToDomain(entity)).thenReturn(domain);
 
@@ -159,7 +164,7 @@ class UserServiceImplTest {
     @Test
     void given_anotherExistingUsername_when_findByUsername_then_returnsDomain() {
         UserEntity entity = new UserEntity("foodie99", "hashedPassword", "Foodie");
-        UserDomain domain = new UserDomain(2L, "foodie99", "Foodie", null, LocalDateTime.now(), LocalDateTime.now());
+        UserDomain domain = new UserDomain(2L, "foodie99", "Foodie", null, null, LocalDateTime.now(), LocalDateTime.now());
         when(userDb.findByUsername("foodie99")).thenReturn(Optional.of(entity));
         when(userMapper.mapToDomain(entity)).thenReturn(domain);
 
@@ -224,7 +229,7 @@ class UserServiceImplTest {
     void given_unchangedUsernameAndNewDisplayName_when_updateProfile_then_returnsUpdatedDomain() {
         UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
         UpdateProfileDisplay request = new UpdateProfileDisplay("chef123", "Master Chef", null);
-        UserDomain expected = new UserDomain(1L, "chef123", "Master Chef", null, LocalDateTime.now(), LocalDateTime.now());
+        UserDomain expected = new UserDomain(1L, "chef123", "Master Chef", null, null, LocalDateTime.now(), LocalDateTime.now());
 
         when(userDb.findByUsername("chef123")).thenReturn(Optional.of(entity));
         when(userDb.existsByUsernameAndIdNot("chef123", entity.getId())).thenReturn(false);
@@ -248,7 +253,7 @@ class UserServiceImplTest {
         when(userIconDb.findById(5L)).thenReturn(Optional.of(iconEntity));
         when(userDb.save(entity)).thenReturn(entity);
         when(userMapper.mapToDomain(entity)).thenReturn(
-                new UserDomain(1L, "chef123", "Chef", null, LocalDateTime.now(), LocalDateTime.now()));
+                new UserDomain(1L, "chef123", "Chef", null, null, LocalDateTime.now(), LocalDateTime.now()));
 
         userServiceImpl.updateProfile("chef123", request);
 
@@ -305,7 +310,7 @@ class UserServiceImplTest {
         when(userDb.existsByUsernameAndIdNot("chef123", entity.getId())).thenReturn(false);
         when(userDb.save(entity)).thenReturn(entity);
         when(userMapper.mapToDomain(entity)).thenReturn(
-                new UserDomain(1L, "chef123", "Chef", null, LocalDateTime.now(), LocalDateTime.now()));
+                new UserDomain(1L, "chef123", "Chef", null, null, LocalDateTime.now(), LocalDateTime.now()));
 
         userServiceImpl.updateProfile("chef123", request);
 
@@ -366,6 +371,93 @@ class UserServiceImplTest {
     @Test
     void given_nullChangePasswordDisplay_when_changePassword_then_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> userServiceImpl.changePassword("chef123", null))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void given_memberOfGroup_when_setDefaultGroup_then_setsGroupOnEntity() {
+        UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
+        GroupEntity group = new GroupEntity("Foodies");
+
+        when(userDb.findByUsername("chef123")).thenReturn(Optional.of(entity));
+        when(groupDb.isMember(1L, entity.getId())).thenReturn(true);
+        when(groupDb.findById(1L)).thenReturn(Optional.of(group));
+        when(userDb.save(entity)).thenReturn(entity);
+        when(userMapper.mapToDomain(entity)).thenReturn(
+                new UserDomain(1L, "chef123", "Chef", null, null, LocalDateTime.now(), LocalDateTime.now()));
+
+        userServiceImpl.setDefaultGroup("chef123", 1L);
+
+        assertThat(entity.getDefaultGroup()).contains(group);
+    }
+
+    @Test
+    void given_memberOfGroup_when_setDefaultGroup_then_returnsUpdatedDomain() {
+        UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
+        GroupEntity group = new GroupEntity("Foodies");
+        UserDomain expected = new UserDomain(1L, "chef123", "Chef", null, null, LocalDateTime.now(), LocalDateTime.now());
+
+        when(userDb.findByUsername("chef123")).thenReturn(Optional.of(entity));
+        when(groupDb.isMember(1L, entity.getId())).thenReturn(true);
+        when(groupDb.findById(1L)).thenReturn(Optional.of(group));
+        when(userDb.save(entity)).thenReturn(entity);
+        when(userMapper.mapToDomain(entity)).thenReturn(expected);
+
+        UserDomain result = userServiceImpl.setDefaultGroup("chef123", 1L);
+
+        assertThat(result).isEqualTo(expected);
+    }
+
+    @Test
+    void given_notMemberOfGroup_when_setDefaultGroup_then_throwsValidationException() {
+        UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
+
+        when(userDb.findByUsername("chef123")).thenReturn(Optional.of(entity));
+        when(groupDb.isMember(1L, entity.getId())).thenReturn(false);
+
+        assertThatThrownBy(() -> userServiceImpl.setDefaultGroup("chef123", 1L))
+                .isInstanceOf(ValidationException.class);
+        verify(userDb, never()).save(any());
+    }
+
+    @Test
+    void given_unknownGroupId_when_setDefaultGroup_then_throwsNotFoundException() {
+        UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
+
+        when(userDb.findByUsername("chef123")).thenReturn(Optional.of(entity));
+        when(groupDb.isMember(99L, entity.getId())).thenReturn(true);
+        when(groupDb.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userServiceImpl.setDefaultGroup("chef123", 99L))
+                .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    void given_nullGroupId_when_setDefaultGroup_then_clearsExistingDefaultGroup() {
+        UserEntity entity = new UserEntity("chef123", "hashedPassword", "Chef");
+        entity.changeDefaultGroup(new GroupEntity("Foodies"));
+
+        when(userDb.findByUsername("chef123")).thenReturn(Optional.of(entity));
+        when(userDb.save(entity)).thenReturn(entity);
+        when(userMapper.mapToDomain(entity)).thenReturn(
+                new UserDomain(1L, "chef123", "Chef", null, null, LocalDateTime.now(), LocalDateTime.now()));
+
+        userServiceImpl.setDefaultGroup("chef123", null);
+
+        assertThat(entity.getDefaultGroup()).isEmpty();
+    }
+
+    @Test
+    void given_unknownUsername_when_setDefaultGroup_then_throwsNotFoundException() {
+        when(userDb.findByUsername("ghost")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userServiceImpl.setDefaultGroup("ghost", 1L))
+                .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    void given_blankUsername_when_setDefaultGroup_then_throwsIllegalArgumentException() {
+        assertThatThrownBy(() -> userServiceImpl.setDefaultGroup("  ", 1L))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }

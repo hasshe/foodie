@@ -24,7 +24,16 @@ class NavigationE2ETest extends AbstractFoodieE2ETest {
         footerLink("Restaurants").click();
 
         assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Restaurants"))).isVisible();
-        assertThat(page.getByText("Coming soon.")).isVisible();
+        assertThat(page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add restaurant"))).isVisible();
+        assertThat(footerLink("Home")).isVisible();
+    }
+
+    @Test
+    void given_loggedInUser_when_clickingGroups_then_navigatesThereAndFooterPersists() {
+        footerLink("Groups").click();
+
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Groups").setExact(true))).isVisible();
+        assertThat(page.getByLabel("Group name")).isVisible();
         assertThat(footerLink("Home")).isVisible();
     }
 
@@ -47,7 +56,7 @@ class NavigationE2ETest extends AbstractFoodieE2ETest {
 
     @Test
     void given_loggedInUser_when_navigatingAwayFromHomeAndBack_then_homeContentReturns() {
-        footerLink("Restaurants").click();
+        footerLink("Wishlist").click();
         assertThat(page.getByText("Coming soon.")).isVisible();
 
         footerLink("Home").click();

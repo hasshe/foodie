@@ -1,25 +1,198 @@
 package com.hasshe.foodie.views;
 
+import com.hasshe.foodie.constants.RestaurantConstants;
 import com.hasshe.foodie.constants.RouteConstants;
+import com.hasshe.foodie.controller.GroupController;
+import com.hasshe.foodie.controller.ProfileController;
+import com.hasshe.foodie.controller.RestaurantController;
+import com.hasshe.foodie.dto.AddRestaurantDisplay;
+import com.hasshe.foodie.dto.GroupDisplay;
+import com.hasshe.foodie.dto.RestaurantDisplay;
+import com.hasshe.foodie.dto.UserProfileDisplay;
+import com.hasshe.foodie.exception.ValidationException;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.List;
 
 @Route(value = RouteConstants.ROUTE_RESTAURANTS, layout = MainLayout.class)
 @PageTitle("Restaurants | Foodie")
 @PermitAll
-public class RestaurantsView extends VerticalLayout {
+public class RestaurantsView extends VerticalLayout implements BeforeEnterObserver {
 
-    public RestaurantsView() {
+    private final RestaurantController restaurantController;
+    private final GroupController groupController;
+    private final ProfileController profileController;
+    private final AuthenticationContext authenticationContext;
+
+    private final Grid<RestaurantDisplay> restaurantGrid = new Grid<>(RestaurantDisplay.class, false);
+
+    private final Dialog addRestaurantDialog = new Dialog();
+    private final TextField nameField = new TextField("Name");
+    private final TextField addressField = new TextField("Address");
+    private final TextField cuisineTypeField = new TextField("Cuisine type");
+    private final TextField websiteField = new TextField("Website");
+    private final Select<GroupDisplay> groupSelect = new Select<>();
+
+    private String currentUsername;
+
+    public RestaurantsView(
+            RestaurantController restaurantController,
+            GroupController groupController,
+            ProfileController profileController,
+            AuthenticationContext authenticationContext
+    ) {
+        this.restaurantController = restaurantController;
+        this.groupController = groupController;
+        this.profileController = profileController;
+        this.authenticationContext = authenticationContext;
+
         setSizeFull();
         setAlignItems(Alignment.CENTER);
-        setJustifyContentMode(JustifyContentMode.CENTER);
 
-        add(new H1("Restaurants"), new Paragraph("Coming soon."));
+        restaurantGrid.addColumn(RestaurantDisplay::name).setHeader("Name");
+        restaurantGrid.addColumn(RestaurantDisplay::address).setHeader("Address");
+        restaurantGrid.addColumn(RestaurantDisplay::groupName).setHeader("Group");
+        restaurantGrid.setWidth("640px");
+        restaurantGrid.getStyle().set("align-self", "center");
+
+        Button addRestaurantButton = new Button("Add restaurant", event -> openAddRestaurantDialog());
+        addRestaurantButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        buildAddRestaurantDialog();
+
+        VerticalLayout card = new VerticalLayout(new H1("Restaurants"), addRestaurantButton, restaurantGrid);
+        card.setAlignItems(Alignment.CENTER);
+
+        add(card);
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        currentUsername = authenticationContext.getAuthenticatedUser(UserDetails.class)
+                .map(UserDetails::getUsername)
+                .orElseThrow(() -> new IllegalStateException("Restaurants view requires an authenticated user"));
+        refreshRestaurants();
+    }
+
+    private void refreshRestaurants() {
+        restaurantGrid.setItems(restaurantController.listRestaurantsForUser(currentUsername));
+    }
+
+    private void buildAddRestaurantDialog() {
+        addRestaurantDialog.setHeaderTitle("Add restaurant");
+
+        nameField.setRequiredIndicatorVisible(true);
+        nameField.setMaxLength(RestaurantConstants.NAME_MAX_LENGTH);
+        nameField.setWidthFull();
+
+        addressField.setRequiredIndicatorVisible(true);
+        addressField.setMaxLength(RestaurantConstants.ADDRESS_MAX_LENGTH);
+        addressField.setWidthFull();
+
+        cuisineTypeField.setMaxLength(RestaurantConstants.CUISINE_TYPE_MAX_LENGTH);
+        cuisineTypeField.setWidthFull();
+
+        websiteField.setMaxLength(RestaurantConstants.WEBSITE_MAX_LENGTH);
+        websiteField.setWidthFull();
+
+        groupSelect.setLabel("Group");
+        groupSelect.setRequiredIndicatorVisible(true);
+        groupSelect.setWidthFull();
+        groupSelect.setItemLabelGenerator(this::generateGroupLabel);
+
+        VerticalLayout formLayout = new VerticalLayout(
+                nameField, addressField, cuisineTypeField, websiteField, groupSelect
+        );
+        formLayout.setPadding(false);
+        formLayout.setWidth("320px");
+
+        Button saveButton = new Button("Add", event -> addRestaurant());
+        saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        Button cancelButton = new Button("Cancel", event -> addRestaurantDialog.close());
+
+        HorizontalLayout buttons = new HorizontalLayout(saveButton, cancelButton);
+
+        VerticalLayout dialogLayout = new VerticalLayout(formLayout, buttons);
+        dialogLayout.setPadding(false);
+        addRestaurantDialog.add(dialogLayout);
+    }
+
+    private void openAddRestaurantDialog() {
+        List<GroupDisplay> groups = groupController.listGroupsForUser(currentUsername);
+        if (groups.isEmpty()) {
+            Notification errorNotification = Notification.show("You need to create a group before adding a restaurant.");
+            errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            getUI().ifPresent(ui -> ui.navigate(RouteConstants.ROUTE_GROUPS));
+            return;
+        }
+
+        nameField.clear();
+        addressField.clear();
+        cuisineTypeField.clear();
+        websiteField.clear();
+
+        groupSelect.setItems(groups);
+        Long defaultGroupId = profileController.getProfile(currentUsername)
+                .map(UserProfileDisplay::defaultGroup)
+                .map(GroupDisplay::id)
+                .orElse(null);
+        GroupDisplay defaultGroup = groups.stream()
+                .filter(group -> group.id().equals(defaultGroupId))
+                .findFirst()
+                .orElse(groups.get(0));
+        groupSelect.setValue(defaultGroup);
+
+        addRestaurantDialog.open();
+    }
+
+    private void addRestaurant() {
+        if (nameField.isEmpty() || addressField.isEmpty() || groupSelect.isEmpty()) {
+            Notification.show("Please fill in the required fields.");
+            return;
+        }
+
+        try {
+            restaurantController.addRestaurant(currentUsername, new AddRestaurantDisplay(
+                    nameField.getValue(),
+                    addressField.getValue(),
+                    blankToNull(cuisineTypeField.getValue()),
+                    blankToNull(websiteField.getValue()),
+                    null,
+                    groupSelect.getValue().id()
+            ));
+            addRestaurantDialog.close();
+            Notification success = Notification.show("Restaurant added.");
+            success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+            refreshRestaurants();
+        } catch (ValidationException e) {
+            Notification errorNotification = Notification.show(e.getMessage());
+            errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        }
+    }
+
+    private String generateGroupLabel(GroupDisplay groupDisplay) {
+        return groupDisplay == null ? "" : groupDisplay.name();
+    }
+
+    private String blankToNull(String value) {
+        return (value == null || value.isBlank()) ? null : value;
     }
 }

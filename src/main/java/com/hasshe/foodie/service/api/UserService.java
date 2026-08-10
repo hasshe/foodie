@@ -20,4 +20,6 @@ public interface UserService {
     UserDomain updateProfile(String currentUsername, UpdateProfileDisplay updateProfileDisplay);
 
     void changePassword(String username, ChangePasswordDisplay changePasswordDisplay);
+
+    UserDomain setDefaultGroup(String username, Long groupId);
 }
