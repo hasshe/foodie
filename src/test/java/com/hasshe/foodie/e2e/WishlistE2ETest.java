@@ -123,32 +123,6 @@ class WishlistE2ETest extends AbstractFoodieE2ETest {
         assertThat(page.locator("vaadin-grid").getByText("The Diner")).isVisible();
     }
 
-    private void registerAndLogin(String prefix) {
-        String username = uniqueUsername(prefix);
-        registerUser(username, "Wishlist User", "supersecret123");
-        assertThat(page.getByText("Registration successful. Please log in.")).isVisible();
-        login(username, "supersecret123");
-        assertThat(page.getByText("Welcome to the first Vaadin page.")).isVisible();
-    }
-
-    private void createGroup(String name) {
-        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Groups")).click();
-        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Groups").setExact(true))).isVisible();
-        page.getByLabel("Group name").fill(name);
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Create group")).click();
-        assertThat(page.getByText("Group created.")).isVisible();
-    }
-
-    private void goToWishlist() {
-        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Wishlist")).click();
-        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Wishlist"))).isVisible();
-    }
-
-    private void goToRestaurants() {
-        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Restaurants")).click();
-        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Restaurants"))).isVisible();
-    }
-
     private void addToWishlist(String name, String address) {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add to wishlist")).click();
         page.getByLabel("Name").fill(name);

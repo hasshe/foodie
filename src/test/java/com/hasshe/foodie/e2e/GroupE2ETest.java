@@ -11,11 +11,7 @@ class GroupE2ETest extends AbstractFoodieE2ETest {
 
     @BeforeEach
     void registerLoginAndOpenGroups() {
-        String username = uniqueUsername("groupuser");
-        registerUser(username, "Group User", "supersecret123");
-        assertThat(page.getByText("Registration successful. Please log in.")).isVisible();
-        login(username, "supersecret123");
-        assertThat(page.getByText("Welcome to the first Vaadin page.")).isVisible();
+        registerAndLogin("groupuser");
         page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Groups")).click();
         assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Groups").setExact(true))).isVisible();
     }
@@ -27,7 +23,7 @@ class GroupE2ETest extends AbstractFoodieE2ETest {
 
     @Test
     void given_validName_when_creatingGroup_then_appearsInListAndIsAutomaticallyDefault() {
-        createGroup("Foodies");
+        submitGroupName("Foodies");
 
         assertThat(page.getByText("Group created.")).isVisible();
         assertThat(page.getByText("Foodies")).isVisible();
@@ -43,9 +39,9 @@ class GroupE2ETest extends AbstractFoodieE2ETest {
 
     @Test
     void given_secondGroup_when_settingAsDefault_then_defaultBadgeMovesToIt() {
-        createGroup("Foodies");
+        submitGroupName("Foodies");
         assertThat(page.getByText("Group created.")).isVisible();
-        createGroup("Weekend Warriors");
+        submitGroupName("Weekend Warriors");
         assertThat(page.getByText("Group created.")).isVisible();
 
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Set as default")).click();
@@ -53,7 +49,7 @@ class GroupE2ETest extends AbstractFoodieE2ETest {
         assertThat(page.getByText("Default group updated.")).isVisible();
     }
 
-    private void createGroup(String name) {
+    private void submitGroupName(String name) {
         page.getByLabel("Group name").fill(name);
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Create group")).click();
     }

@@ -52,9 +52,7 @@ class RestaurantE2ETest extends AbstractFoodieE2ETest {
     void given_twoGroups_when_openingAddRestaurantDialog_then_defaultGroupIsPreSelectedAndOthersSelectable() {
         registerAndLogin("restuser3");
         createGroup("Foodies");
-        assertThat(page.getByText("Group created.")).isVisible();
         createGroup("Weekend Warriors");
-        assertThat(page.getByText("Group created.")).isVisible();
         goToRestaurants();
 
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add restaurant")).click();
@@ -87,25 +85,5 @@ class RestaurantE2ETest extends AbstractFoodieE2ETest {
         page.reload();
 
         assertThat(page.getByText("The Diner")).isVisible();
-    }
-
-    private void registerAndLogin(String prefix) {
-        String username = uniqueUsername(prefix);
-        registerUser(username, "Restaurant User", "supersecret123");
-        assertThat(page.getByText("Registration successful. Please log in.")).isVisible();
-        login(username, "supersecret123");
-        assertThat(page.getByText("Welcome to the first Vaadin page.")).isVisible();
-    }
-
-    private void createGroup(String name) {
-        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Groups")).click();
-        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Groups").setExact(true))).isVisible();
-        page.getByLabel("Group name").fill(name);
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Create group")).click();
-    }
-
-    private void goToRestaurants() {
-        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Restaurants")).click();
-        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Restaurants"))).isVisible();
     }
 }

@@ -15,8 +15,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.springframework.util.Assert;
 
-import java.util.Locale;
-
 public class RestaurantRatingDialogComponent {
 
     public interface SubmitListener {
@@ -24,8 +22,8 @@ public class RestaurantRatingDialogComponent {
     }
 
     private final Dialog dialog = new Dialog();
-    private final Span overallAverageValue = new Span();
-    private final Span ratingCountValue = new Span();
+    private final RatingSummaryHeaderComponent ratingSummaryHeaderComponent = new RatingSummaryHeaderComponent();
+    private final RatingFormatter ratingFormatter = new RatingFormatter();
     private final VerticalLayout categoryAveragesLayout = new VerticalLayout();
     private final RatingSliderComponent foodSlider =
             new RatingSliderComponent(RestaurantRatingConstants.CATEGORY_FOOD, RestaurantRatingConstants.DEFAULT_SCORE);
@@ -40,14 +38,6 @@ public class RestaurantRatingDialogComponent {
         dialog.setWidth("360px");
         new DialogCloseButtonComponent(dialog);
 
-        HorizontalLayout overallRow = new HorizontalLayout(new Span("Overall average"), overallAverageValue);
-        overallRow.setWidthFull();
-        overallRow.setJustifyContentMode(JustifyContentMode.BETWEEN);
-
-        HorizontalLayout countRow = new HorizontalLayout(new Span("Ratings submitted"), ratingCountValue);
-        countRow.setWidthFull();
-        countRow.setJustifyContentMode(JustifyContentMode.BETWEEN);
-
         categoryAveragesLayout.setPadding(false);
         categoryAveragesLayout.setSpacing(false);
         categoryAveragesLayout.setWidthFull();
@@ -59,8 +49,7 @@ public class RestaurantRatingDialogComponent {
         buttons.getStyle().set("flex-wrap", "wrap");
 
         VerticalLayout content = new VerticalLayout(
-                overallRow,
-                countRow,
+                ratingSummaryHeaderComponent.asComponent(),
                 categoryAveragesLayout,
                 new Hr(),
                 new Span("Your rating"),
@@ -90,8 +79,7 @@ public class RestaurantRatingDialogComponent {
     public void refresh(RestaurantRatingSummaryDisplay restaurantRatingSummaryDisplay) {
         Assert.notNull(restaurantRatingSummaryDisplay, "restaurantRatingSummaryDisplay must not be null");
 
-        overallAverageValue.setText(formatScore(restaurantRatingSummaryDisplay.overallAverage()));
-        ratingCountValue.setText(String.valueOf(restaurantRatingSummaryDisplay.ratingCount()));
+        ratingSummaryHeaderComponent.refresh(restaurantRatingSummaryDisplay.overallAverage(), restaurantRatingSummaryDisplay.ratingCount());
 
         categoryAveragesLayout.removeAll();
         categoryAveragesLayout.add(
@@ -107,14 +95,10 @@ public class RestaurantRatingDialogComponent {
     }
 
     private Component averageRow(String categoryLabel, double average) {
-        HorizontalLayout row = new HorizontalLayout(new Span(categoryLabel + " group average"), new Span(formatScore(average)));
+        HorizontalLayout row = new HorizontalLayout(new Span(categoryLabel + " group average"), new Span(ratingFormatter.format(average)));
         row.setWidthFull();
         row.setJustifyContentMode(JustifyContentMode.BETWEEN);
         return row;
-    }
-
-    private String formatScore(double score) {
-        return String.format(Locale.US, "%.1f", score);
     }
 
     private void handleSave() {

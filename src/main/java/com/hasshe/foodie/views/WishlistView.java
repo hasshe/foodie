@@ -1,6 +1,5 @@
 package com.hasshe.foodie.views;
 
-import com.hasshe.foodie.constants.RestaurantConstants;
 import com.hasshe.foodie.constants.RouteConstants;
 import com.hasshe.foodie.controller.GroupController;
 import com.hasshe.foodie.controller.ProfileController;
@@ -10,21 +9,17 @@ import com.hasshe.foodie.dto.GroupDisplay;
 import com.hasshe.foodie.dto.RestaurantDisplay;
 import com.hasshe.foodie.dto.UserProfileDisplay;
 import com.hasshe.foodie.exception.ValidationException;
+import com.hasshe.foodie.views.components.AddRestaurantDialogComponent;
 import com.hasshe.foodie.views.components.CheckOffPromptDialogComponent;
-import com.hasshe.foodie.views.components.DialogCloseButtonComponent;
 import com.hasshe.foodie.views.components.RestaurantInfoDialogComponent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.select.Select;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -49,13 +44,7 @@ public class WishlistView extends VerticalLayout implements BeforeEnterObserver 
 
     private final Grid<RestaurantDisplay> wishlistGrid = new Grid<>(RestaurantDisplay.class, false);
 
-    private final Dialog addToWishlistDialog = new Dialog();
-    private final TextField nameField = new TextField("Name");
-    private final TextField addressField = new TextField("Address");
-    private final TextField cuisineTypeField = new TextField("Cuisine type");
-    private final TextField websiteField = new TextField("Website");
-    private final Select<GroupDisplay> groupSelect = new Select<>();
-
+    private final AddRestaurantDialogComponent addToWishlistDialogComponent = new AddRestaurantDialogComponent("Add to wishlist");
     private final RestaurantInfoDialogComponent restaurantInfoDialogComponent = new RestaurantInfoDialogComponent();
     private final CheckOffPromptDialogComponent checkOffPromptDialogComponent = new CheckOffPromptDialogComponent();
 
@@ -85,8 +74,6 @@ public class WishlistView extends VerticalLayout implements BeforeEnterObserver 
         Button addToWishlistButton = new Button("Add to wishlist", event -> openAddToWishlistDialog());
         addToWishlistButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        buildAddToWishlistDialog();
-
         VerticalLayout card = new VerticalLayout(new H1("Wishlist"), addToWishlistButton, wishlistGrid);
         card.setAlignItems(Alignment.CENTER);
         card.setWidthFull();
@@ -106,46 +93,6 @@ public class WishlistView extends VerticalLayout implements BeforeEnterObserver 
         wishlistGrid.setItems(wishlistController.listWishlistForUser(currentUsername));
     }
 
-    private void buildAddToWishlistDialog() {
-        addToWishlistDialog.setHeaderTitle("Add to wishlist");
-        new DialogCloseButtonComponent(addToWishlistDialog);
-
-        nameField.setRequiredIndicatorVisible(true);
-        nameField.setMaxLength(RestaurantConstants.NAME_MAX_LENGTH);
-        nameField.setWidthFull();
-
-        addressField.setRequiredIndicatorVisible(true);
-        addressField.setMaxLength(RestaurantConstants.ADDRESS_MAX_LENGTH);
-        addressField.setWidthFull();
-
-        cuisineTypeField.setMaxLength(RestaurantConstants.CUISINE_TYPE_MAX_LENGTH);
-        cuisineTypeField.setWidthFull();
-
-        websiteField.setMaxLength(RestaurantConstants.WEBSITE_MAX_LENGTH);
-        websiteField.setWidthFull();
-
-        groupSelect.setLabel("Group");
-        groupSelect.setRequiredIndicatorVisible(true);
-        groupSelect.setWidthFull();
-        groupSelect.setItemLabelGenerator(this::generateGroupLabel);
-
-        VerticalLayout formLayout = new VerticalLayout(
-                nameField, addressField, cuisineTypeField, websiteField, groupSelect
-        );
-        formLayout.setPadding(false);
-        formLayout.setWidth("320px");
-
-        Button saveButton = new Button("Add", event -> addToWishlist());
-        saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        Button cancelButton = new Button("Cancel", event -> addToWishlistDialog.close());
-
-        HorizontalLayout buttons = new HorizontalLayout(saveButton, cancelButton);
-
-        VerticalLayout dialogLayout = new VerticalLayout(formLayout, buttons);
-        dialogLayout.setPadding(false);
-        addToWishlistDialog.add(dialogLayout);
-    }
-
     private void openAddToWishlistDialog() {
         List<GroupDisplay> groups = groupController.listGroupsForUser(currentUsername);
         if (groups.isEmpty()) {
@@ -155,41 +102,24 @@ public class WishlistView extends VerticalLayout implements BeforeEnterObserver 
             return;
         }
 
-        nameField.clear();
-        addressField.clear();
-        cuisineTypeField.clear();
-        websiteField.clear();
+        addToWishlistDialogComponent.open(groups, resolveDefaultGroup(groups), this::handleAddToWishlist);
+    }
 
-        groupSelect.setItems(groups);
+    private GroupDisplay resolveDefaultGroup(List<GroupDisplay> groups) {
         Long defaultGroupId = profileController.getProfile(currentUsername)
                 .map(UserProfileDisplay::defaultGroup)
                 .map(GroupDisplay::id)
                 .orElse(null);
-        GroupDisplay defaultGroup = groups.stream()
+        return groups.stream()
                 .filter(group -> group.id().equals(defaultGroupId))
                 .findFirst()
                 .orElse(groups.get(0));
-        groupSelect.setValue(defaultGroup);
-
-        addToWishlistDialog.open();
     }
 
-    private void addToWishlist() {
-        if (nameField.isEmpty() || addressField.isEmpty() || groupSelect.isEmpty()) {
-            Notification.show("Please fill in the required fields.");
-            return;
-        }
-
+    private void handleAddToWishlist(AddRestaurantDisplay addRestaurantDisplay) {
         try {
-            wishlistController.addToWishlist(currentUsername, new AddRestaurantDisplay(
-                    nameField.getValue(),
-                    addressField.getValue(),
-                    blankToNull(cuisineTypeField.getValue()),
-                    blankToNull(websiteField.getValue()),
-                    null,
-                    groupSelect.getValue().id()
-            ));
-            addToWishlistDialog.close();
+            wishlistController.addToWishlist(currentUsername, addRestaurantDisplay);
+            addToWishlistDialogComponent.close();
             Notification success = Notification.show("Added to wishlist.");
             success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
             refreshWishlist();
@@ -227,13 +157,5 @@ public class WishlistView extends VerticalLayout implements BeforeEnterObserver 
             Notification errorNotification = Notification.show(e.getMessage());
             errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         }
-    }
-
-    private String generateGroupLabel(GroupDisplay groupDisplay) {
-        return groupDisplay == null ? "" : groupDisplay.name();
-    }
-
-    private String blankToNull(String value) {
-        return (value == null || value.isBlank()) ? null : value;
     }
 }

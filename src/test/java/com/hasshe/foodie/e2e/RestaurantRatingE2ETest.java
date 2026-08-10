@@ -167,36 +167,8 @@ class RestaurantRatingE2ETest extends AbstractFoodieE2ETest {
         assertThat(page.locator("input[type=range]:visible").nth(0)).hasValue("95");
     }
 
-    private void registerAndLogin(String prefix) {
-        String username = uniqueUsername(prefix);
-        registerUser(username, "Rating User", "supersecret123");
-        assertThat(page.getByText("Registration successful. Please log in.")).isVisible();
-        login(username, "supersecret123");
-        assertThat(page.getByText("Welcome to the first Vaadin page.")).isVisible();
-    }
-
-    private void createGroup(String name) {
-        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Groups")).click();
-        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Groups").setExact(true))).isVisible();
-        page.getByLabel("Group name").fill(name);
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Create group")).click();
-        assertThat(page.getByText("Group created.")).isVisible();
-    }
-
-    private void addRestaurant(String name, String address) {
-        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Restaurants")).click();
-        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Restaurants"))).isVisible();
-
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add restaurant")).click();
-        page.getByLabel("Name").fill(name);
-        page.getByLabel("Address").fill(address);
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add").setExact(true)).click();
-        assertThat(page.getByText("Restaurant added.")).isVisible();
-    }
-
     private void addRestaurantWithDetails(String name, String address, String cuisineType, String website) {
-        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Restaurants")).click();
-        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Restaurants"))).isVisible();
+        goToRestaurants();
 
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add restaurant")).click();
         page.getByLabel("Name").fill(name);

@@ -1,6 +1,5 @@
 package com.hasshe.foodie.views;
 
-import com.hasshe.foodie.constants.RestaurantConstants;
 import com.hasshe.foodie.constants.RouteConstants;
 import com.hasshe.foodie.controller.FoodItemController;
 import com.hasshe.foodie.controller.FoodItemRatingController;
@@ -19,24 +18,22 @@ import com.hasshe.foodie.dto.RestaurantDisplay;
 import com.hasshe.foodie.dto.RestaurantRatingSummaryDisplay;
 import com.hasshe.foodie.dto.UserProfileDisplay;
 import com.hasshe.foodie.exception.ValidationException;
-import com.hasshe.foodie.views.components.DialogCloseButtonComponent;
+import com.hasshe.foodie.views.components.AddRestaurantDialogComponent;
 import com.hasshe.foodie.views.components.FoodItemListDialogComponent;
 import com.hasshe.foodie.views.components.FoodItemRatingDialogComponent;
+import com.hasshe.foodie.views.components.RatingFormatter;
 import com.hasshe.foodie.views.components.RestaurantInfoDialogComponent;
 import com.hasshe.foodie.views.components.RestaurantRatingDialogComponent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -47,7 +44,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 @Route(value = RouteConstants.ROUTE_RESTAURANTS, layout = MainLayout.class)
 @PageTitle("Restaurants | Foodie")
@@ -64,16 +60,12 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
     private final FoodItemRatingController foodItemRatingController;
     private final AuthenticationContext authenticationContext;
 
+    private final RatingFormatter ratingFormatter = new RatingFormatter();
+
     private final Grid<RestaurantDisplay> restaurantGrid = new Grid<>(RestaurantDisplay.class, false);
     private final Select<String> groupFilterSelect = new Select<>();
 
-    private final Dialog addRestaurantDialog = new Dialog();
-    private final TextField nameField = new TextField("Name");
-    private final TextField addressField = new TextField("Address");
-    private final TextField cuisineTypeField = new TextField("Cuisine type");
-    private final TextField websiteField = new TextField("Website");
-    private final Select<GroupDisplay> groupSelect = new Select<>();
-
+    private final AddRestaurantDialogComponent addRestaurantDialogComponent = new AddRestaurantDialogComponent("Add restaurant");
     private final RestaurantInfoDialogComponent restaurantInfoDialogComponent = new RestaurantInfoDialogComponent();
     private final RestaurantRatingDialogComponent restaurantRatingDialogComponent = new RestaurantRatingDialogComponent();
     private final FoodItemListDialogComponent foodItemListDialogComponent = new FoodItemListDialogComponent();
@@ -115,8 +107,6 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
 
         Button addRestaurantButton = new Button("Add restaurant", event -> openAddRestaurantDialog());
         addRestaurantButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
-        buildAddRestaurantDialog();
 
         VerticalLayout card = new VerticalLayout(new H1("Restaurants"), addRestaurantButton, groupFilterSelect, restaurantGrid);
         card.setAlignItems(Alignment.CENTER);
@@ -176,46 +166,6 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
                 .ifPresent(this::openRatingDialog);
     }
 
-    private void buildAddRestaurantDialog() {
-        addRestaurantDialog.setHeaderTitle("Add restaurant");
-        new DialogCloseButtonComponent(addRestaurantDialog);
-
-        nameField.setRequiredIndicatorVisible(true);
-        nameField.setMaxLength(RestaurantConstants.NAME_MAX_LENGTH);
-        nameField.setWidthFull();
-
-        addressField.setRequiredIndicatorVisible(true);
-        addressField.setMaxLength(RestaurantConstants.ADDRESS_MAX_LENGTH);
-        addressField.setWidthFull();
-
-        cuisineTypeField.setMaxLength(RestaurantConstants.CUISINE_TYPE_MAX_LENGTH);
-        cuisineTypeField.setWidthFull();
-
-        websiteField.setMaxLength(RestaurantConstants.WEBSITE_MAX_LENGTH);
-        websiteField.setWidthFull();
-
-        groupSelect.setLabel("Group");
-        groupSelect.setRequiredIndicatorVisible(true);
-        groupSelect.setWidthFull();
-        groupSelect.setItemLabelGenerator(this::generateGroupLabel);
-
-        VerticalLayout formLayout = new VerticalLayout(
-                nameField, addressField, cuisineTypeField, websiteField, groupSelect
-        );
-        formLayout.setPadding(false);
-        formLayout.setWidth("320px");
-
-        Button saveButton = new Button("Add", event -> addRestaurant());
-        saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        Button cancelButton = new Button("Cancel", event -> addRestaurantDialog.close());
-
-        HorizontalLayout buttons = new HorizontalLayout(saveButton, cancelButton);
-
-        VerticalLayout dialogLayout = new VerticalLayout(formLayout, buttons);
-        dialogLayout.setPadding(false);
-        addRestaurantDialog.add(dialogLayout);
-    }
-
     private void openAddRestaurantDialog() {
         List<GroupDisplay> groups = groupController.listGroupsForUser(currentUsername);
         if (groups.isEmpty()) {
@@ -225,41 +175,24 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
             return;
         }
 
-        nameField.clear();
-        addressField.clear();
-        cuisineTypeField.clear();
-        websiteField.clear();
+        addRestaurantDialogComponent.open(groups, resolveDefaultGroup(groups), this::handleAddRestaurant);
+    }
 
-        groupSelect.setItems(groups);
+    private GroupDisplay resolveDefaultGroup(List<GroupDisplay> groups) {
         Long defaultGroupId = profileController.getProfile(currentUsername)
                 .map(UserProfileDisplay::defaultGroup)
                 .map(GroupDisplay::id)
                 .orElse(null);
-        GroupDisplay defaultGroup = groups.stream()
+        return groups.stream()
                 .filter(group -> group.id().equals(defaultGroupId))
                 .findFirst()
                 .orElse(groups.get(0));
-        groupSelect.setValue(defaultGroup);
-
-        addRestaurantDialog.open();
     }
 
-    private void addRestaurant() {
-        if (nameField.isEmpty() || addressField.isEmpty() || groupSelect.isEmpty()) {
-            Notification.show("Please fill in the required fields.");
-            return;
-        }
-
+    private void handleAddRestaurant(AddRestaurantDisplay addRestaurantDisplay) {
         try {
-            restaurantController.addRestaurant(currentUsername, new AddRestaurantDisplay(
-                    nameField.getValue(),
-                    addressField.getValue(),
-                    blankToNull(cuisineTypeField.getValue()),
-                    blankToNull(websiteField.getValue()),
-                    null,
-                    groupSelect.getValue().id()
-            ));
-            addRestaurantDialog.close();
+            restaurantController.addRestaurant(currentUsername, addRestaurantDisplay);
+            addRestaurantDialogComponent.close();
             Notification success = Notification.show("Restaurant added.");
             success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
             refreshRestaurants();
@@ -346,18 +279,7 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
         }
     }
 
-    private String generateGroupLabel(GroupDisplay groupDisplay) {
-        return groupDisplay == null ? "" : groupDisplay.name();
-    }
-
     private String formatAverageRating(RestaurantDisplay restaurantDisplay) {
-        if (restaurantDisplay.ratingCount() == 0) {
-            return "No ratings";
-        }
-        return String.format(Locale.US, "%.1f", restaurantDisplay.averageRating());
-    }
-
-    private String blankToNull(String value) {
-        return (value == null || value.isBlank()) ? null : value;
+        return ratingFormatter.format(restaurantDisplay.averageRating(), restaurantDisplay.ratingCount());
     }
 }

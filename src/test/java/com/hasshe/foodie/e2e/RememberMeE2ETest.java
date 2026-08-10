@@ -67,11 +67,7 @@ class RememberMeE2ETest extends AbstractFoodieE2ETest {
 
     @Test
     void given_rememberMeCookie_when_changingUsername_then_cookieIsCleared() {
-        String username = uniqueUsername("rmuser");
-        registerUser(username, "Remember Me User", "supersecret123");
-        assertThat(page.getByText("Registration successful. Please log in.")).isVisible();
-        login(username, "supersecret123");
-        assertThat(page.getByText("Welcome to the first Vaadin page.")).isVisible();
+        registerAndLogin("rmuser");
         assertTrue(findRememberMeCookie().isPresent());
 
         page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Profile")).click();
@@ -86,17 +82,13 @@ class RememberMeE2ETest extends AbstractFoodieE2ETest {
 
     @Test
     void given_rememberMeCookie_when_changingPassword_then_cookieIsCleared() {
-        String username = uniqueUsername("rmuser");
-        registerUser(username, "Remember Me User", "supersecret123");
-        assertThat(page.getByText("Registration successful. Please log in.")).isVisible();
-        login(username, "supersecret123");
-        assertThat(page.getByText("Welcome to the first Vaadin page.")).isVisible();
+        registerAndLogin("rmuser");
         assertTrue(findRememberMeCookie().isPresent());
 
         page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Profile")).click();
         assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Profile"))).isVisible();
 
-        page.getByLabel("Current password").fill("supersecret123");
+        page.getByLabel("Current password").fill(DEFAULT_PASSWORD);
         page.getByLabel("New password", new Page.GetByLabelOptions().setExact(true)).fill("brandnewpassword1");
         page.getByLabel("Confirm new password").fill("brandnewpassword1");
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Change password")).click();

@@ -4,6 +4,7 @@ import com.hasshe.foodie.constants.RouteConstants;
 import com.hasshe.foodie.controller.FoodItemController;
 import com.hasshe.foodie.dto.FoodItemCategoryGroupDisplay;
 import com.hasshe.foodie.dto.FoodItemWithRestaurantDisplay;
+import com.hasshe.foodie.views.components.RatingFormatter;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
@@ -19,7 +20,6 @@ import jakarta.annotation.security.PermitAll;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
-import java.util.Locale;
 
 @Route(value = RouteConstants.ROUTE_FOOD_LIST, layout = MainLayout.class)
 @PageTitle("FoodList | Foodie")
@@ -28,6 +28,8 @@ public class FoodListView extends VerticalLayout implements BeforeEnterObserver 
 
     private final FoodItemController foodItemController;
     private final AuthenticationContext authenticationContext;
+
+    private final RatingFormatter ratingFormatter = new RatingFormatter();
 
     private final VerticalLayout categoryGroupsLayout = new VerticalLayout();
     private final Span emptyStateMessage = new Span(
@@ -87,9 +89,6 @@ public class FoodListView extends VerticalLayout implements BeforeEnterObserver 
     }
 
     private String formatAverageRating(FoodItemWithRestaurantDisplay foodItemWithRestaurantDisplay) {
-        if (foodItemWithRestaurantDisplay.ratingCount() == 0) {
-            return "No ratings";
-        }
-        return String.format(Locale.US, "%.1f", foodItemWithRestaurantDisplay.averageRating());
+        return ratingFormatter.format(foodItemWithRestaurantDisplay.averageRating(), foodItemWithRestaurantDisplay.ratingCount());
     }
 }

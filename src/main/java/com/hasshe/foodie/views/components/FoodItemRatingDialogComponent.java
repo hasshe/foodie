@@ -9,12 +9,9 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.springframework.util.Assert;
-
-import java.util.Locale;
 
 public class FoodItemRatingDialogComponent {
 
@@ -23,8 +20,7 @@ public class FoodItemRatingDialogComponent {
     }
 
     private final Dialog dialog = new Dialog();
-    private final Span overallAverageValue = new Span();
-    private final Span ratingCountValue = new Span();
+    private final RatingSummaryHeaderComponent ratingSummaryHeaderComponent = new RatingSummaryHeaderComponent();
     private final RatingSliderComponent ratingSlider =
             new RatingSliderComponent(FoodItemRatingConstants.CATEGORY_RATING, FoodItemRatingConstants.DEFAULT_SCORE);
 
@@ -34,14 +30,6 @@ public class FoodItemRatingDialogComponent {
         dialog.setWidth("320px");
         new DialogCloseButtonComponent(dialog);
 
-        HorizontalLayout overallRow = new HorizontalLayout(new Span("Overall average"), overallAverageValue);
-        overallRow.setWidthFull();
-        overallRow.setJustifyContentMode(JustifyContentMode.BETWEEN);
-
-        HorizontalLayout countRow = new HorizontalLayout(new Span("Ratings submitted"), ratingCountValue);
-        countRow.setWidthFull();
-        countRow.setJustifyContentMode(JustifyContentMode.BETWEEN);
-
         Button saveButton = new Button("Save rating", event -> handleSave());
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         HorizontalLayout buttons = new HorizontalLayout(saveButton);
@@ -49,8 +37,7 @@ public class FoodItemRatingDialogComponent {
         buttons.getStyle().set("flex-wrap", "wrap");
 
         VerticalLayout content = new VerticalLayout(
-                overallRow,
-                countRow,
+                ratingSummaryHeaderComponent.asComponent(),
                 new Hr(),
                 new Span("Your rating"),
                 ratingSlider,
@@ -77,15 +64,10 @@ public class FoodItemRatingDialogComponent {
     public void refresh(FoodItemRatingSummaryDisplay foodItemRatingSummaryDisplay) {
         Assert.notNull(foodItemRatingSummaryDisplay, "foodItemRatingSummaryDisplay must not be null");
 
-        overallAverageValue.setText(formatScore(foodItemRatingSummaryDisplay.averageRating()));
-        ratingCountValue.setText(String.valueOf(foodItemRatingSummaryDisplay.ratingCount()));
+        ratingSummaryHeaderComponent.refresh(foodItemRatingSummaryDisplay.averageRating(), foodItemRatingSummaryDisplay.ratingCount());
 
         FoodItemRatingDisplay currentUserRating = foodItemRatingSummaryDisplay.currentUserRating();
         ratingSlider.setValue(currentUserRating != null ? currentUserRating.rating() : FoodItemRatingConstants.DEFAULT_SCORE);
-    }
-
-    private String formatScore(double score) {
-        return String.format(Locale.US, "%.1f", score);
     }
 
     private void handleSave() {

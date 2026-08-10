@@ -11,9 +11,13 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Tag("e2e")
 abstract class AbstractFoodieE2ETest {
+
+    protected static final String DEFAULT_PASSWORD = "supersecret123";
 
     private static final AtomicLong USERNAME_SEQUENCE = new AtomicLong(System.currentTimeMillis());
 
@@ -62,8 +66,44 @@ abstract class AbstractFoodieE2ETest {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Register")).click();
     }
 
+    protected String registerAndLogin(String usernamePrefix) {
+        String username = uniqueUsername(usernamePrefix);
+        registerUser(username, "Test User", DEFAULT_PASSWORD);
+        assertThat(page.getByText("Registration successful. Please log in.")).isVisible();
+        login(username, DEFAULT_PASSWORD);
+        assertThat(page.getByText("Welcome to the first Vaadin page.")).isVisible();
+        return username;
+    }
+
     protected void selectIcon(String label) {
         page.getByLabel("Icon").click();
         page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName(label)).click();
+    }
+
+    protected void goToRestaurants() {
+        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Restaurants")).click();
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Restaurants"))).isVisible();
+    }
+
+    protected void goToWishlist() {
+        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Wishlist")).click();
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Wishlist"))).isVisible();
+    }
+
+    protected void createGroup(String name) {
+        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Groups")).click();
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Groups").setExact(true))).isVisible();
+        page.getByLabel("Group name").fill(name);
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Create group")).click();
+        assertThat(page.getByText("Group created.")).isVisible();
+    }
+
+    protected void addRestaurant(String name, String address) {
+        goToRestaurants();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add restaurant")).click();
+        page.getByLabel("Name").fill(name);
+        page.getByLabel("Address").fill(address);
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add").setExact(true)).click();
+        assertThat(page.getByText("Restaurant added.")).isVisible();
     }
 }

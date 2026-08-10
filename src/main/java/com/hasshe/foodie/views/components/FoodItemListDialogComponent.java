@@ -16,7 +16,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import org.springframework.util.Assert;
 
 import java.util.List;
-import java.util.Locale;
 
 public class FoodItemListDialogComponent {
 
@@ -34,6 +33,7 @@ public class FoodItemListDialogComponent {
     private final TextField dishCategoryField = new TextField("Dish category");
     private final RatingSliderComponent ratingSlider =
             new RatingSliderComponent(FoodItemRatingConstants.CATEGORY_RATING, FoodItemRatingConstants.DEFAULT_SCORE);
+    private final RatingFormatter ratingFormatter = new RatingFormatter();
 
     private AddFoodItemListener addFoodItemListener = (addFoodItemDisplay, rateFoodItemDisplay) -> {};
     private FoodItemSelectedListener foodItemSelectedListener = foodItemDisplay -> {};
@@ -102,10 +102,7 @@ public class FoodItemListDialogComponent {
     }
 
     private String formatAverageRating(FoodItemDisplay foodItemDisplay) {
-        if (foodItemDisplay.ratingCount() == 0) {
-            return "No ratings";
-        }
-        return String.format(Locale.US, "%.1f", foodItemDisplay.averageRating());
+        return ratingFormatter.format(foodItemDisplay.averageRating(), foodItemDisplay.ratingCount());
     }
 
     private void resetForm() {

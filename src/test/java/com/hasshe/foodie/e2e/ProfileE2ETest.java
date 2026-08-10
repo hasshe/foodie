@@ -14,15 +14,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class ProfileE2ETest extends AbstractFoodieE2ETest {
 
     private String username;
-    private static final String PASSWORD = "supersecret123";
 
     @BeforeEach
     void registerLoginAndOpenProfile() {
-        username = uniqueUsername("profileuser");
-        registerUser(username, "Profile User", PASSWORD);
-        assertThat(page.getByText("Registration successful. Please log in.")).isVisible();
-        login(username, PASSWORD);
-        assertThat(page.getByText("Welcome to the first Vaadin page.")).isVisible();
+        username = registerAndLogin("profileuser");
         page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Profile")).click();
         assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Profile"))).isVisible();
     }
@@ -69,10 +64,10 @@ class ProfileE2ETest extends AbstractFoodieE2ETest {
         context.close();
         context = PlaywrightSupport.browser().newContext();
         page = context.newPage();
-        registerUser(otherUsername, "Other User", PASSWORD);
+        registerUser(otherUsername, "Other User", DEFAULT_PASSWORD);
         assertThat(page.getByText("Registration successful. Please log in.")).isVisible();
 
-        login(username, PASSWORD);
+        login(username, DEFAULT_PASSWORD);
         page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Profile")).click();
         page.getByLabel("Username").fill(otherUsername);
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Save changes")).click();
@@ -93,7 +88,7 @@ class ProfileE2ETest extends AbstractFoodieE2ETest {
 
     @Test
     void given_mismatchedNewPasswords_when_changingPassword_then_showsClientSideError() {
-        page.getByLabel("Current password").fill(PASSWORD);
+        page.getByLabel("Current password").fill(DEFAULT_PASSWORD);
         page.getByLabel("New password", new Page.GetByLabelOptions().setExact(true)).fill("brandnewpassword1");
         page.getByLabel("Confirm new password").fill("somethingelse123");
 
@@ -104,7 +99,7 @@ class ProfileE2ETest extends AbstractFoodieE2ETest {
 
     @Test
     void given_correctCurrentPassword_when_changingPassword_then_forcesLogoutAndNewPasswordWorks() {
-        page.getByLabel("Current password").fill(PASSWORD);
+        page.getByLabel("Current password").fill(DEFAULT_PASSWORD);
         page.getByLabel("New password", new Page.GetByLabelOptions().setExact(true)).fill("brandnewpassword1");
         page.getByLabel("Confirm new password").fill("brandnewpassword1");
 
@@ -125,7 +120,7 @@ class ProfileE2ETest extends AbstractFoodieE2ETest {
 
         assertThat(page).hasURL(Pattern.compile(".*/login.*"));
 
-        login(newUsername, PASSWORD);
+        login(newUsername, DEFAULT_PASSWORD);
         assertThat(page.getByText("Welcome to the first Vaadin page.")).isVisible();
     }
 

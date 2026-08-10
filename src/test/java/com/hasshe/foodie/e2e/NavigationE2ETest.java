@@ -11,12 +11,8 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 class NavigationE2ETest extends AbstractFoodieE2ETest {
 
     @BeforeEach
-    void registerAndLogin() {
-        String username = uniqueUsername("navuser");
-        registerUser(username, "Nav User", "supersecret123");
-        assertThat(page.getByText("Registration successful. Please log in.")).isVisible();
-        login(username, "supersecret123");
-        assertThat(page.getByText("Welcome to the first Vaadin page.")).isVisible();
+    void setUp() {
+        registerAndLogin("navuser");
     }
 
     @Test
