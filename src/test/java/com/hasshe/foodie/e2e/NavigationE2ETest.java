@@ -25,7 +25,7 @@ class NavigationE2ETest extends AbstractFoodieE2ETest {
 
         assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Restaurants"))).isVisible();
         assertThat(page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add restaurant"))).isVisible();
-        assertThat(footerLink("Home")).isVisible();
+        assertThat(footerLink("Profile")).isVisible();
     }
 
     @Test
@@ -34,7 +34,7 @@ class NavigationE2ETest extends AbstractFoodieE2ETest {
 
         assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Groups").setExact(true))).isVisible();
         assertThat(page.getByLabel("Group name")).isVisible();
-        assertThat(footerLink("Home")).isVisible();
+        assertThat(footerLink("Profile")).isVisible();
     }
 
     @Test
@@ -43,7 +43,7 @@ class NavigationE2ETest extends AbstractFoodieE2ETest {
 
         assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Wishlist"))).isVisible();
         assertThat(page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add to wishlist"))).isVisible();
-        assertThat(footerLink("Home")).isVisible();
+        assertThat(footerLink("Profile")).isVisible();
     }
 
     @Test
@@ -55,11 +55,16 @@ class NavigationE2ETest extends AbstractFoodieE2ETest {
     }
 
     @Test
-    void given_loggedInUser_when_navigatingAwayFromHomeAndBack_then_homeContentReturns() {
+    void given_loggedInUser_when_footerMenuIsShown_then_homeLinkIsNotPresent() {
+        assertThat(footerLink("Home")).not().isVisible();
+    }
+
+    @Test
+    void given_loggedInUser_when_navigatingAwayAndBackToRootUrl_then_welcomePageReturns() {
         footerLink("Wishlist").click();
         assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Wishlist"))).isVisible();
 
-        footerLink("Home").click();
+        goTo("/");
 
         assertThat(page.getByText("Welcome to the first Vaadin page.")).isVisible();
     }

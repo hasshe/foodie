@@ -2,7 +2,6 @@ package com.hasshe.foodie.views.components;
 
 import com.hasshe.foodie.dto.UserIconDisplay;
 import com.hasshe.foodie.views.GroupsView;
-import com.hasshe.foodie.views.MainView;
 import com.hasshe.foodie.views.ProfileView;
 import com.hasshe.foodie.views.RestaurantsView;
 import com.hasshe.foodie.views.WishlistView;
@@ -28,7 +27,6 @@ public class FooterMenuComponent extends HorizontalLayout {
         setProfileIcon(initialProfileIcon);
 
         add(
-                createNavItem(VaadinIcon.HOME, "Home", MainView.class),
                 createNavItem(VaadinIcon.CUTLERY, "Restaurants", RestaurantsView.class),
                 createNavItem(VaadinIcon.USERS, "Groups", GroupsView.class),
                 createNavItem(VaadinIcon.STAR, "Wishlist", WishlistView.class),

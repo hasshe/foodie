@@ -57,8 +57,8 @@ class ProfileE2ETest extends AbstractFoodieE2ETest {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Save changes")).click();
         assertThat(page.getByText("Profile updated.")).isVisible();
 
-        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Home")).click();
-        assertThat(page.getByText("Welcome to the first Vaadin page.")).isVisible();
+        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Restaurants")).click();
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Restaurants"))).isVisible();
 
         assertEquals("vaadin:heart", footerProfileIcon().getAttribute("icon"));
     }
