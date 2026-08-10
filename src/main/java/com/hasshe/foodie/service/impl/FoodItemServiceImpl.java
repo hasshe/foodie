@@ -7,9 +7,12 @@ import com.hasshe.foodie.db.api.RestaurantDb;
 import com.hasshe.foodie.db.api.UserDb;
 import com.hasshe.foodie.db.entity.FoodItemEntity;
 import com.hasshe.foodie.db.entity.FoodItemRatingEntity;
+import com.hasshe.foodie.db.entity.GroupEntity;
 import com.hasshe.foodie.db.entity.RestaurantEntity;
 import com.hasshe.foodie.db.entity.UserEntity;
+import com.hasshe.foodie.domain.FoodItemCategoryGroupDomain;
 import com.hasshe.foodie.domain.FoodItemDomain;
+import com.hasshe.foodie.domain.FoodItemWithRestaurantDomain;
 import com.hasshe.foodie.dto.AddFoodItemDisplay;
 import com.hasshe.foodie.exception.NotFoundException;
 import com.hasshe.foodie.exception.ValidationException;
@@ -20,7 +23,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 class FoodItemServiceImpl implements FoodItemService {
@@ -95,10 +102,56 @@ class FoodItemServiceImpl implements FoodItemService {
                 .toList();
     }
 
+    @Override
+    public List<FoodItemCategoryGroupDomain> listFoodItemsGroupedByCategory(String username) {
+        Assert.hasText(username, "username must not be blank");
+        log.debug("Listing food items grouped by category for username {}", username);
+
+        UserEntity userEntity = userDb.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("No user found with username: " + username));
+
+        List<Long> groupIds = groupDb.findByMemberId(userEntity.getId()).stream().map(GroupEntity::getId).toList();
+        if (groupIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<FoodItemWithRestaurantDomain> foodItemsWithRestaurant = restaurantDb.findByGroupIdInAndWishlist(groupIds, false).stream()
+                .flatMap(restaurantEntity -> foodItemDb.findByRestaurantId(restaurantEntity.getId()).stream())
+                .map(this::mapWithRestaurantAndAverageRating)
+                .toList();
+
+        Map<String, List<FoodItemWithRestaurantDomain>> groupedByCategory = foodItemsWithRestaurant.stream()
+                .collect(Collectors.groupingBy(FoodItemWithRestaurantDomain::dishCategory, LinkedHashMap::new, Collectors.toList()));
+
+        return groupedByCategory.entrySet().stream()
+                .filter(entry -> entry.getValue().size() > 1)
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> new FoodItemCategoryGroupDomain(
+                        entry.getKey(),
+                        entry.getValue().stream()
+                                .sorted(Comparator.comparingDouble(FoodItemWithRestaurantDomain::averageRating).reversed())
+                                .toList()
+                ))
+                .toList();
+    }
+
     private FoodItemDomain mapWithAverageRating(FoodItemEntity foodItemEntity) {
         List<FoodItemRatingEntity> ratingEntities = foodItemRatingDb.findByFoodItemId(foodItemEntity.getId());
         double averageRating = averageOf(ratingEntities);
         return foodItemMapper.mapToDomain(foodItemEntity, averageRating, ratingEntities.size());
+    }
+
+    private FoodItemWithRestaurantDomain mapWithRestaurantAndAverageRating(FoodItemEntity foodItemEntity) {
+        List<FoodItemRatingEntity> ratingEntities = foodItemRatingDb.findByFoodItemId(foodItemEntity.getId());
+        double averageRating = averageOf(ratingEntities);
+        return new FoodItemWithRestaurantDomain(
+                foodItemEntity.getId(),
+                foodItemEntity.getName(),
+                foodItemEntity.getDishCategory(),
+                foodItemEntity.getRestaurant().getName(),
+                averageRating,
+                ratingEntities.size()
+        );
     }
 
     private double averageOf(List<FoodItemRatingEntity> ratingEntities) {

@@ -11,6 +11,7 @@ public final class RouteConstants {
     public static final String ROUTE_RESTAURANTS = "restaurants";
     public static final String ROUTE_GROUPS = "groups";
     public static final String ROUTE_WISHLIST = "wishlist";
+    public static final String ROUTE_FOOD_LIST = "food-list";
     public static final String ROUTE_PROFILE = "profile";
     public static final String QUERY_PARAM_ERROR = "error";
     public static final String QUERY_PARAM_RATE_RESTAURANT_ID = "rate";

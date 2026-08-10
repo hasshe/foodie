@@ -477,19 +477,20 @@
       <div class="card">
         <h3>Dish Category Grouping</h3>
         <ul>
+          <li>V1: accessible via the "FoodList" footer navigation item</li>
           <li>Each food item gets a freeform dish category</li>
-          <li>Categories normalised to lowercase for matching</li>
-          <li>Auto-builds a ranked list per category</li>
-          <li>Spans all restaurants the user or group has visited</li>
+          <li>V1: exact-string category match — lowercase normalisation not yet implemented</li>
+          <li>A category group is only shown once 2+ food items share it</li>
+          <li>Spans all restaurants across the user's groups</li>
         </ul>
       </div>
       <div class="card">
         <h3>Comparison View</h3>
         <ul>
-          <li>Shows all logged instances of a dish type</li>
-          <li>Restaurant, date, user, rating, photo thumbnail</li>
+          <li>V1: shows Name, Restaurant, Rating per dish</li>
           <li>Sorted by rating descending</li>
-          <li>Filterable by group or personal visits</li>
+          <li>Future: date, user, photo thumbnail once Visits are logged</li>
+          <li>Future: filterable by group or personal visits</li>
         </ul>
       </div>
       <div class="card">

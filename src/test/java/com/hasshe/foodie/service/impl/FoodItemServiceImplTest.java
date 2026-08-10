@@ -10,6 +10,7 @@ import com.hasshe.foodie.db.entity.FoodItemRatingEntity;
 import com.hasshe.foodie.db.entity.GroupEntity;
 import com.hasshe.foodie.db.entity.RestaurantEntity;
 import com.hasshe.foodie.db.entity.UserEntity;
+import com.hasshe.foodie.domain.FoodItemCategoryGroupDomain;
 import com.hasshe.foodie.domain.FoodItemDomain;
 import com.hasshe.foodie.dto.AddFoodItemDisplay;
 import com.hasshe.foodie.exception.NotFoundException;
@@ -21,12 +22,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.Field;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -204,6 +208,109 @@ class FoodItemServiceImplTest {
     @Test
     void given_blankUsername_when_listFoodItemsForRestaurant_then_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> foodItemServiceImpl.listFoodItemsForRestaurant("  ", 1L))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void given_twoRestaurantsWithSameCategoryFoodItems_when_listFoodItemsGroupedByCategory_then_returnsGroupedCategory() {
+        RestaurantEntity secondRestaurant = new RestaurantEntity("Steakhouse", "456 Oak Ave", group, null, null, null);
+        setId(secondRestaurant, 2L);
+
+        FoodItemEntity firstItem = new FoodItemEntity(restaurant, "Ribeye Steak", "Steak");
+        setId(firstItem, 1L);
+        FoodItemEntity secondItem = new FoodItemEntity(secondRestaurant, "Filet Mignon", "Steak");
+        setId(secondItem, 2L);
+
+        when(userDb.findByUsername("chef123")).thenReturn(Optional.of(user));
+        when(groupDb.findByMemberId(user.getId())).thenReturn(List.of(group));
+        when(restaurantDb.findByGroupIdInAndWishlist(Collections.singletonList(group.getId()), false)).thenReturn(List.of(restaurant, secondRestaurant));
+        when(foodItemDb.findByRestaurantId(restaurant.getId())).thenReturn(List.of(firstItem));
+        when(foodItemDb.findByRestaurantId(2L)).thenReturn(List.of(secondItem));
+        when(foodItemRatingDb.findByFoodItemId(1L)).thenReturn(List.of());
+        when(foodItemRatingDb.findByFoodItemId(2L)).thenReturn(List.of());
+
+        List<FoodItemCategoryGroupDomain> result = foodItemServiceImpl.listFoodItemsGroupedByCategory("chef123");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).dishCategory()).isEqualTo("Steak");
+        assertThat(result.get(0).foodItems()).extracting("name").containsExactlyInAnyOrder("Ribeye Steak", "Filet Mignon");
+        assertThat(result.get(0).foodItems()).extracting("restaurantName").containsExactlyInAnyOrder("The Diner", "Steakhouse");
+    }
+
+    @Test
+    void given_ratedFoodItemsInSameCategory_when_listFoodItemsGroupedByCategory_then_sortsByAverageRatingDescending() {
+        RestaurantEntity secondRestaurant = new RestaurantEntity("Steakhouse", "456 Oak Ave", group, null, null, null);
+        setId(secondRestaurant, 2L);
+
+        FoodItemEntity lowerRated = new FoodItemEntity(restaurant, "Ribeye Steak", "Steak");
+        setId(lowerRated, 1L);
+        FoodItemEntity higherRated = new FoodItemEntity(secondRestaurant, "Filet Mignon", "Steak");
+        setId(higherRated, 2L);
+
+        UserEntity rater = new UserEntity("foodie99", "hashedPassword", "Foodie");
+        FoodItemRatingEntity lowerRating = new FoodItemRatingEntity(lowerRated, rater, 40);
+        FoodItemRatingEntity higherRating = new FoodItemRatingEntity(higherRated, rater, 90);
+
+        when(userDb.findByUsername("chef123")).thenReturn(Optional.of(user));
+        when(groupDb.findByMemberId(user.getId())).thenReturn(List.of(group));
+        when(restaurantDb.findByGroupIdInAndWishlist(Collections.singletonList(group.getId()), false)).thenReturn(List.of(restaurant, secondRestaurant));
+        when(foodItemDb.findByRestaurantId(restaurant.getId())).thenReturn(List.of(lowerRated));
+        when(foodItemDb.findByRestaurantId(2L)).thenReturn(List.of(higherRated));
+        when(foodItemRatingDb.findByFoodItemId(1L)).thenReturn(List.of(lowerRating));
+        when(foodItemRatingDb.findByFoodItemId(2L)).thenReturn(List.of(higherRating));
+
+        List<FoodItemCategoryGroupDomain> result = foodItemServiceImpl.listFoodItemsGroupedByCategory("chef123");
+
+        assertThat(result.get(0).foodItems()).extracting("name").containsExactly("Filet Mignon", "Ribeye Steak");
+    }
+
+    private void setId(Object entity, Long id) {
+        try {
+            Field idField = entity.getClass().getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(entity, id);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Failed to set test fixture id", e);
+        }
+    }
+
+    @Test
+    void given_onlyOneFoodItemInCategory_when_listFoodItemsGroupedByCategory_then_categoryIsExcluded() {
+        FoodItemEntity singleItem = new FoodItemEntity(restaurant, "Ribeye Steak", "Steak");
+
+        when(userDb.findByUsername("chef123")).thenReturn(Optional.of(user));
+        when(groupDb.findByMemberId(user.getId())).thenReturn(List.of(group));
+        when(restaurantDb.findByGroupIdInAndWishlist(Collections.singletonList(group.getId()), false)).thenReturn(List.of(restaurant));
+        when(foodItemDb.findByRestaurantId(restaurant.getId())).thenReturn(List.of(singleItem));
+        when(foodItemRatingDb.findByFoodItemId(singleItem.getId())).thenReturn(List.of());
+
+        List<FoodItemCategoryGroupDomain> result = foodItemServiceImpl.listFoodItemsGroupedByCategory("chef123");
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void given_userWithNoGroups_when_listFoodItemsGroupedByCategory_then_returnsEmptyListWithoutQueryingRestaurants() {
+        when(userDb.findByUsername("chef123")).thenReturn(Optional.of(user));
+        when(groupDb.findByMemberId(user.getId())).thenReturn(List.of());
+
+        List<FoodItemCategoryGroupDomain> result = foodItemServiceImpl.listFoodItemsGroupedByCategory("chef123");
+
+        assertThat(result).isEmpty();
+        verify(restaurantDb, never()).findByGroupIdInAndWishlist(any(), anyBoolean());
+    }
+
+    @Test
+    void given_unknownUsername_when_listFoodItemsGroupedByCategory_then_throwsNotFoundException() {
+        when(userDb.findByUsername("ghost")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> foodItemServiceImpl.listFoodItemsGroupedByCategory("ghost"))
+                .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    void given_blankUsername_when_listFoodItemsGroupedByCategory_then_throwsIllegalArgumentException() {
+        assertThatThrownBy(() -> foodItemServiceImpl.listFoodItemsGroupedByCategory("  "))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }

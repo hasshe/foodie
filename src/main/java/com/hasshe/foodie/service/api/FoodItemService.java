@@ -1,5 +1,6 @@
 package com.hasshe.foodie.service.api;
 
+import com.hasshe.foodie.domain.FoodItemCategoryGroupDomain;
 import com.hasshe.foodie.domain.FoodItemDomain;
 import com.hasshe.foodie.dto.AddFoodItemDisplay;
 
@@ -10,4 +11,6 @@ public interface FoodItemService {
     FoodItemDomain addFoodItem(String username, Long restaurantId, AddFoodItemDisplay addFoodItemDisplay);
 
     List<FoodItemDomain> listFoodItemsForRestaurant(String username, Long restaurantId);
+
+    List<FoodItemCategoryGroupDomain> listFoodItemsGroupedByCategory(String username);
 }

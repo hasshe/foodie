@@ -2,6 +2,7 @@ package com.hasshe.foodie.controller;
 
 import com.hasshe.foodie.domain.FoodItemDomain;
 import com.hasshe.foodie.dto.AddFoodItemDisplay;
+import com.hasshe.foodie.dto.FoodItemCategoryGroupDisplay;
 import com.hasshe.foodie.dto.FoodItemDisplay;
 import com.hasshe.foodie.mapper.FoodItemMapper;
 import com.hasshe.foodie.service.api.FoodItemService;
@@ -33,5 +34,10 @@ public class FoodItemController {
         Assert.hasText(username, "username must not be blank");
         Assert.notNull(restaurantId, "restaurantId must not be null");
         return foodItemService.listFoodItemsForRestaurant(username, restaurantId).stream().map(foodItemMapper::mapToDisplay).toList();
+    }
+
+    public List<FoodItemCategoryGroupDisplay> listFoodItemsGroupedByCategory(String username) {
+        Assert.hasText(username, "username must not be blank");
+        return foodItemService.listFoodItemsGroupedByCategory(username).stream().map(foodItemMapper::mapToDisplay).toList();
     }
 }

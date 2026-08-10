@@ -1,7 +1,9 @@
 package com.hasshe.foodie.controller;
 
+import com.hasshe.foodie.domain.FoodItemCategoryGroupDomain;
 import com.hasshe.foodie.domain.FoodItemDomain;
 import com.hasshe.foodie.dto.AddFoodItemDisplay;
+import com.hasshe.foodie.dto.FoodItemCategoryGroupDisplay;
 import com.hasshe.foodie.dto.FoodItemDisplay;
 import com.hasshe.foodie.exception.ValidationException;
 import com.hasshe.foodie.mapper.FoodItemMapper;
@@ -118,6 +120,33 @@ class FoodItemControllerTest {
     @Test
     void given_nullRestaurantId_when_listFoodItemsForRestaurant_then_throwsIllegalArgumentException() {
         assertThatThrownBy(() -> foodItemController.listFoodItemsForRestaurant("chef123", null))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void given_categoryGroups_when_listFoodItemsGroupedByCategory_then_returnsMappedDisplays() {
+        FoodItemCategoryGroupDomain domain = new FoodItemCategoryGroupDomain("Steak", List.of());
+        FoodItemCategoryGroupDisplay display = new FoodItemCategoryGroupDisplay("Steak", List.of());
+        when(foodItemService.listFoodItemsGroupedByCategory("chef123")).thenReturn(List.of(domain));
+        when(foodItemMapper.mapToDisplay(domain)).thenReturn(display);
+
+        List<FoodItemCategoryGroupDisplay> result = foodItemController.listFoodItemsGroupedByCategory("chef123");
+
+        assertThat(result).containsExactly(display);
+    }
+
+    @Test
+    void given_noCategoryGroups_when_listFoodItemsGroupedByCategory_then_returnsEmptyList() {
+        when(foodItemService.listFoodItemsGroupedByCategory("chef123")).thenReturn(List.of());
+
+        List<FoodItemCategoryGroupDisplay> result = foodItemController.listFoodItemsGroupedByCategory("chef123");
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void given_blankUsername_when_listFoodItemsGroupedByCategory_then_throwsIllegalArgumentException() {
+        assertThatThrownBy(() -> foodItemController.listFoodItemsGroupedByCategory("  "))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }
