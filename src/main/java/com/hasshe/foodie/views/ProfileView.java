@@ -7,6 +7,7 @@ import com.hasshe.foodie.dto.ChangePasswordDisplay;
 import com.hasshe.foodie.dto.UpdateProfileDisplay;
 import com.hasshe.foodie.dto.UserIconDisplay;
 import com.hasshe.foodie.exception.ValidationException;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.H1;
@@ -30,6 +31,7 @@ import jakarta.annotation.security.PermitAll;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
+import java.util.Optional;
 
 @Route(value = RouteConstants.ROUTE_PROFILE, layout = MainLayout.class)
 @PageTitle("Profile | Foodie")
@@ -168,11 +170,24 @@ public class ProfileView extends VerticalLayout implements BeforeEnterObserver {
             } else {
                 Notification success = Notification.show("Profile updated.");
                 success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                findMainLayout().ifPresent(MainLayout::refreshProfileIcon);
             }
         } catch (ValidationException e) {
             Notification errorNotification = Notification.show(e.getMessage());
             errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         }
+    }
+
+    private Optional<MainLayout> findMainLayout() {
+        Optional<Component> ancestor = getParent();
+        while (ancestor.isPresent()) {
+            Component component = ancestor.get();
+            if (component instanceof MainLayout mainLayout) {
+                return Optional.of(mainLayout);
+            }
+            ancestor = component.getParent();
+        }
+        return Optional.empty();
     }
 
     private void changePassword() {
