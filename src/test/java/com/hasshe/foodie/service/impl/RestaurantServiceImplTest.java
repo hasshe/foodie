@@ -25,6 +25,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -164,7 +165,7 @@ class RestaurantServiceImplTest {
 
         when(userDb.findByUsername("chef123")).thenReturn(Optional.of(user));
         when(groupDb.findByMemberId(user.getId())).thenReturn(List.of(group));
-        when(restaurantDb.findByGroupIdIn(Collections.singletonList(group.getId()))).thenReturn(List.of(restaurantEntity));
+        when(restaurantDb.findByGroupIdInAndWishlist(Collections.singletonList(group.getId()), false)).thenReturn(List.of(restaurantEntity));
         when(restaurantMapper.mapToDomain(restaurantEntity)).thenReturn(restaurantDomain);
 
         List<RestaurantDomain> result = restaurantServiceImpl.listRestaurantsForUser("chef123");
@@ -182,7 +183,7 @@ class RestaurantServiceImplTest {
         List<RestaurantDomain> result = restaurantServiceImpl.listRestaurantsForUser("chef123");
 
         assertThat(result).isEmpty();
-        verify(restaurantDb, never()).findByGroupIdIn(any());
+        verify(restaurantDb, never()).findByGroupIdInAndWishlist(any(), anyBoolean());
     }
 
     @Test

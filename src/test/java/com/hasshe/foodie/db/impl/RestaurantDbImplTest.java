@@ -79,27 +79,37 @@ class RestaurantDbImplTest {
     }
 
     @Test
-    void given_matchingGroupIds_when_findByGroupIdIn_then_returnsRestaurants() {
+    void given_matchingGroupIds_when_findByGroupIdInAndWishlist_then_returnsVisitedRestaurants() {
         RestaurantEntity entity = new RestaurantEntity("The Diner", "123 Main St", group, null, null, null);
-        when(restaurantJpaRepository.findByGroupIdIn(List.of(1L))).thenReturn(List.of(entity));
+        when(restaurantJpaRepository.findByGroupIdInAndWishlist(List.of(1L), false)).thenReturn(List.of(entity));
 
-        List<RestaurantEntity> result = restaurantDbImpl.findByGroupIdIn(List.of(1L));
+        List<RestaurantEntity> result = restaurantDbImpl.findByGroupIdInAndWishlist(List.of(1L), false);
 
         assertThat(result).containsExactly(entity);
     }
 
     @Test
-    void given_emptyGroupIdList_when_findByGroupIdIn_then_returnsEmptyList() {
-        when(restaurantJpaRepository.findByGroupIdIn(List.of())).thenReturn(List.of());
+    void given_matchingGroupIds_when_findByGroupIdInAndWishlistTrue_then_returnsWishlistRestaurants() {
+        RestaurantEntity entity = new RestaurantEntity("The Diner", "123 Main St", group, null, null, null, true);
+        when(restaurantJpaRepository.findByGroupIdInAndWishlist(List.of(1L), true)).thenReturn(List.of(entity));
 
-        List<RestaurantEntity> result = restaurantDbImpl.findByGroupIdIn(List.of());
+        List<RestaurantEntity> result = restaurantDbImpl.findByGroupIdInAndWishlist(List.of(1L), true);
+
+        assertThat(result).containsExactly(entity);
+    }
+
+    @Test
+    void given_emptyGroupIdList_when_findByGroupIdInAndWishlist_then_returnsEmptyList() {
+        when(restaurantJpaRepository.findByGroupIdInAndWishlist(List.of(), false)).thenReturn(List.of());
+
+        List<RestaurantEntity> result = restaurantDbImpl.findByGroupIdInAndWishlist(List.of(), false);
 
         assertThat(result).isEmpty();
     }
 
     @Test
-    void given_nullGroupIds_when_findByGroupIdIn_then_throwsIllegalArgumentException() {
-        assertThatThrownBy(() -> restaurantDbImpl.findByGroupIdIn(null))
+    void given_nullGroupIds_when_findByGroupIdInAndWishlist_then_throwsIllegalArgumentException() {
+        assertThatThrownBy(() -> restaurantDbImpl.findByGroupIdInAndWishlist(null, false))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }

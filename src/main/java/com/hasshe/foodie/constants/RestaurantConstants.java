@@ -13,6 +13,7 @@ public final class RestaurantConstants {
     public static final String COLUMN_WEBSITE = "website";
     public static final String COLUMN_PHONE = "phone";
     public static final String COLUMN_GROUP_ID = "group_id";
+    public static final String COLUMN_WISHLIST = "wishlist";
     public static final String COLUMN_CREATED_AT = "created_at";
     public static final String COLUMN_UPDATED_AT = "updated_at";
 

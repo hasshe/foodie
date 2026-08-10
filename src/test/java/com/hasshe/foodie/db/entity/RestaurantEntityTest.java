@@ -65,4 +65,43 @@ class RestaurantEntityTest {
         assertThat(entity.getWebsite()).isEmpty();
         assertThat(entity.getPhone()).isEmpty();
     }
+
+    @Test
+    void given_sixArgConstructor_when_construct_then_isWishlistIsFalse() {
+        RestaurantEntity entity = new RestaurantEntity("The Diner", "123 Main St", group, null, null, null);
+
+        assertThat(entity.isWishlist()).isFalse();
+    }
+
+    @Test
+    void given_wishlistTrue_when_construct_then_isWishlistIsTrue() {
+        RestaurantEntity entity = new RestaurantEntity("The Diner", "123 Main St", group, null, null, null, true);
+
+        assertThat(entity.isWishlist()).isTrue();
+    }
+
+    @Test
+    void given_wishlistFalseExplicit_when_construct_then_isWishlistIsFalse() {
+        RestaurantEntity entity = new RestaurantEntity("The Diner", "123 Main St", group, null, null, null, false);
+
+        assertThat(entity.isWishlist()).isFalse();
+    }
+
+    @Test
+    void given_wishlistItem_when_markVisited_then_isWishlistBecomesFalse() {
+        RestaurantEntity entity = new RestaurantEntity("The Diner", "123 Main St", group, null, null, null, true);
+
+        entity.markVisited();
+
+        assertThat(entity.isWishlist()).isFalse();
+    }
+
+    @Test
+    void given_alreadyVisitedItem_when_markVisited_then_remainsFalse() {
+        RestaurantEntity entity = new RestaurantEntity("The Diner", "123 Main St", group, null, null, null, false);
+
+        entity.markVisited();
+
+        assertThat(entity.isWishlist()).isFalse();
+    }
 }

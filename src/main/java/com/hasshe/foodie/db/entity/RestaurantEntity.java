@@ -51,9 +51,16 @@ public class RestaurantEntity {
     @JoinColumn(name = RestaurantConstants.COLUMN_GROUP_ID, nullable = false)
     private GroupEntity group;
 
+    @Column(name = RestaurantConstants.COLUMN_WISHLIST, nullable = false)
+    private boolean wishlist;
+
     protected RestaurantEntity() {}
 
     public RestaurantEntity(String name, String address, GroupEntity group, String cuisineType, String website, String phone) {
+        this(name, address, group, cuisineType, website, phone, false);
+    }
+
+    public RestaurantEntity(String name, String address, GroupEntity group, String cuisineType, String website, String phone, boolean wishlist) {
         Assert.hasText(name, "name must not be blank");
         Assert.hasText(address, "address must not be blank");
         Assert.notNull(group, "group must not be null");
@@ -63,6 +70,7 @@ public class RestaurantEntity {
         this.cuisineType = cuisineType;
         this.website = website;
         this.phone = phone;
+        this.wishlist = wishlist;
     }
 
     @PrePersist
@@ -103,6 +111,14 @@ public class RestaurantEntity {
 
     public GroupEntity getGroup() {
         return group;
+    }
+
+    public boolean isWishlist() {
+        return wishlist;
+    }
+
+    public void markVisited() {
+        this.wishlist = false;
     }
 
     public LocalDateTime getCreatedAt() {

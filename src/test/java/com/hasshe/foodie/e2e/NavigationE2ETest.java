@@ -42,7 +42,7 @@ class NavigationE2ETest extends AbstractFoodieE2ETest {
         footerLink("Wishlist").click();
 
         assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Wishlist"))).isVisible();
-        assertThat(page.getByText("Coming soon.")).isVisible();
+        assertThat(page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add to wishlist"))).isVisible();
         assertThat(footerLink("Home")).isVisible();
     }
 
@@ -57,7 +57,7 @@ class NavigationE2ETest extends AbstractFoodieE2ETest {
     @Test
     void given_loggedInUser_when_navigatingAwayFromHomeAndBack_then_homeContentReturns() {
         footerLink("Wishlist").click();
-        assertThat(page.getByText("Coming soon.")).isVisible();
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Wishlist"))).isVisible();
 
         footerLink("Home").click();
 

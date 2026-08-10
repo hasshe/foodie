@@ -11,5 +11,5 @@ public interface RestaurantDb {
 
     Optional<RestaurantEntity> findById(Long id);
 
-    List<RestaurantEntity> findByGroupIdIn(List<Long> groupIds);
+    List<RestaurantEntity> findByGroupIdInAndWishlist(List<Long> groupIds, boolean wishlist);
 }

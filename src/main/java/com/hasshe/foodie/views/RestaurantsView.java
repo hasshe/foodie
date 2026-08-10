@@ -116,10 +116,23 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
                 .map(UserDetails::getUsername)
                 .orElseThrow(() -> new IllegalStateException("Restaurants view requires an authenticated user"));
         refreshRestaurants();
+        openRatingDialogFromQueryParameter(event);
     }
 
     private void refreshRestaurants() {
         restaurantGrid.setItems(restaurantController.listRestaurantsForUser(currentUsername));
+    }
+
+    private void openRatingDialogFromQueryParameter(BeforeEnterEvent event) {
+        event.getLocation().getQueryParameters().getParameters()
+                .getOrDefault(RouteConstants.QUERY_PARAM_RATE_RESTAURANT_ID, List.of())
+                .stream()
+                .findFirst()
+                .map(Long::valueOf)
+                .flatMap(restaurantId -> restaurantGrid.getListDataView().getItems()
+                        .filter(restaurantDisplay -> restaurantDisplay.id().equals(restaurantId))
+                        .findFirst())
+                .ifPresent(this::openRatingDialog);
     }
 
     private void buildAddRestaurantDialog() {

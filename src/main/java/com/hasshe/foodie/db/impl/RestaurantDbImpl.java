@@ -38,9 +38,9 @@ class RestaurantDbImpl implements RestaurantDb {
     }
 
     @Override
-    public List<RestaurantEntity> findByGroupIdIn(List<Long> groupIds) {
+    public List<RestaurantEntity> findByGroupIdInAndWishlist(List<Long> groupIds, boolean wishlist) {
         Assert.notNull(groupIds, "groupIds must not be null");
-        log.debug("Finding restaurants for group ids {}", groupIds);
-        return restaurantJpaRepository.findByGroupIdIn(groupIds);
+        log.debug("Finding restaurants for group ids {} with wishlist {}", groupIds, wishlist);
+        return restaurantJpaRepository.findByGroupIdInAndWishlist(groupIds, wishlist);
     }
 }
