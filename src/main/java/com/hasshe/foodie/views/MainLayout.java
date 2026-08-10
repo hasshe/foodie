@@ -30,6 +30,7 @@ public class MainLayout extends VerticalLayout implements RouterLayout, BeforeEn
         setSpacing(false);
 
         content.setSizeFull();
+        content.getStyle().set("overflow-y", "auto");
         setFlexGrow(1, content);
 
         footerMenuComponent = new FooterMenuComponent(currentProfileIcon());
