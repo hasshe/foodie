@@ -5,13 +5,12 @@ import com.hasshe.foodie.constants.UserConstants;
 import com.hasshe.foodie.controller.RegistrationController;
 import com.hasshe.foodie.dto.RegisterUserDisplay;
 import com.hasshe.foodie.exception.ValidationException;
+import com.hasshe.foodie.views.components.NotificationComponent;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -32,6 +31,7 @@ public class RegisterView extends VerticalLayout {
     private final TextField displayNameField = new TextField("Display name");
     private final PasswordField passwordField = new PasswordField("Password");
     private final PasswordField confirmPasswordField = new PasswordField("Confirm password");
+    private final NotificationComponent notificationComponent = new NotificationComponent();
 
     public RegisterView(RegistrationController registrationController) {
         this.registrationController = registrationController;
@@ -82,15 +82,15 @@ public class RegisterView extends VerticalLayout {
 
     private void attemptRegistration() {
         if (hasBlankRequiredField()) {
-            Notification.show("Please fill in all fields.");
+            notificationComponent.showInfo("Please fill in all fields.");
             return;
         }
         if (!passwordField.getValue().equals(confirmPasswordField.getValue())) {
-            Notification.show("Passwords do not match.");
+            notificationComponent.showInfo("Passwords do not match.");
             return;
         }
         if (passwordField.getValue().length() < UserConstants.PASSWORD_MIN_LENGTH) {
-            Notification.show("Password must be at least " + UserConstants.PASSWORD_MIN_LENGTH + " characters.");
+            notificationComponent.showInfo("Password must be at least " + UserConstants.PASSWORD_MIN_LENGTH + " characters.");
             return;
         }
 
@@ -100,12 +100,10 @@ public class RegisterView extends VerticalLayout {
                     passwordField.getValue(),
                     displayNameField.getValue()
             ));
-            Notification success = Notification.show("Registration successful. Please log in.");
-            success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+            notificationComponent.showSuccess("Registration successful. Please log in.");
             getUI().ifPresent(ui -> ui.navigate(RouteConstants.ROUTE_LOGIN));
         } catch (ValidationException e) {
-            Notification errorNotification = Notification.show(e.getMessage());
-            errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            notificationComponent.showError(e.getMessage());
         }
     }
 

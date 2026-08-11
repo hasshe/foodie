@@ -7,10 +7,8 @@ import com.hasshe.foodie.dto.RateFoodItemDisplay;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import org.springframework.util.Assert;
@@ -28,12 +26,13 @@ public class FoodItemListDialogComponent {
     }
 
     private final Dialog dialog = new Dialog();
-    private final Grid<FoodItemDisplay> foodItemGrid = new Grid<>(FoodItemDisplay.class, false);
+    private final VerticalLayout foodItemListLayout = new VerticalLayout();
     private final TextField nameField = new TextField("Name");
     private final TextField dishCategoryField = new TextField("Dish category");
     private final RatingSliderComponent ratingSlider =
             new RatingSliderComponent(FoodItemRatingConstants.CATEGORY_RATING, FoodItemRatingConstants.DEFAULT_SCORE);
     private final RatingFormatter ratingFormatter = new RatingFormatter();
+    private final NotificationComponent notificationComponent = new NotificationComponent();
 
     private AddFoodItemListener addFoodItemListener = (addFoodItemDisplay, rateFoodItemDisplay) -> {};
     private FoodItemSelectedListener foodItemSelectedListener = foodItemDisplay -> {};
@@ -43,12 +42,11 @@ public class FoodItemListDialogComponent {
         dialog.setWidth("420px");
         new DialogCloseButtonComponent(dialog);
 
-        foodItemGrid.addColumn(FoodItemDisplay::name).setHeader("Name");
-        foodItemGrid.addColumn(FoodItemDisplay::dishCategory).setHeader("Category");
-        foodItemGrid.addColumn(this::formatAverageRating).setHeader("Avg rating");
-        foodItemGrid.setWidthFull();
-        foodItemGrid.setHeight("200px");
-        foodItemGrid.addItemClickListener(event -> foodItemSelectedListener.onSelect(event.getItem()));
+        foodItemListLayout.setPadding(false);
+        foodItemListLayout.setSpacing(false);
+        foodItemListLayout.setWidthFull();
+        foodItemListLayout.setMaxHeight("200px");
+        foodItemListLayout.getStyle().set("overflow-y", "auto");
 
         nameField.setWidthFull();
         dishCategoryField.setWidthFull();
@@ -65,7 +63,7 @@ public class FoodItemListDialogComponent {
         );
         formLayout.setPadding(false);
 
-        VerticalLayout content = new VerticalLayout(foodItemGrid, new Hr(), formLayout);
+        VerticalLayout content = new VerticalLayout(foodItemListLayout, new Hr(), formLayout);
         content.setPadding(false);
         dialog.add(content);
     }
@@ -83,7 +81,13 @@ public class FoodItemListDialogComponent {
 
     public void refresh(List<FoodItemDisplay> foodItems) {
         Assert.notNull(foodItems, "foodItems must not be null");
-        foodItemGrid.setItems(foodItems);
+        foodItemListLayout.removeAll();
+        foodItems.forEach(foodItemDisplay -> foodItemListLayout.add(new ListItemComponent(
+                foodItemDisplay.name(),
+                foodItemDisplay.dishCategory(),
+                formatAverageRating(foodItemDisplay),
+                () -> foodItemSelectedListener.onSelect(foodItemDisplay)
+        ).asComponent()));
     }
 
     public void close() {
@@ -92,7 +96,7 @@ public class FoodItemListDialogComponent {
 
     private void handleAdd() {
         if (nameField.isEmpty() || dishCategoryField.isEmpty()) {
-            Notification.show("Please fill in the required fields.");
+            notificationComponent.showInfo("Please fill in the required fields.");
             return;
         }
         AddFoodItemDisplay addFoodItemDisplay = new AddFoodItemDisplay(nameField.getValue(), dishCategoryField.getValue());

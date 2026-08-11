@@ -11,13 +11,13 @@ import com.hasshe.foodie.dto.UserProfileDisplay;
 import com.hasshe.foodie.exception.ValidationException;
 import com.hasshe.foodie.views.components.AddRestaurantDialogComponent;
 import com.hasshe.foodie.views.components.CheckOffPromptDialogComponent;
+import com.hasshe.foodie.views.components.ListItemComponent;
+import com.hasshe.foodie.views.components.NotificationComponent;
 import com.hasshe.foodie.views.components.RestaurantInfoDialogComponent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -42,11 +42,12 @@ public class WishlistView extends VerticalLayout implements BeforeEnterObserver 
     private final ProfileController profileController;
     private final AuthenticationContext authenticationContext;
 
-    private final Grid<RestaurantDisplay> wishlistGrid = new Grid<>(RestaurantDisplay.class, false);
+    private final VerticalLayout wishlistListLayout = new VerticalLayout();
 
     private final AddRestaurantDialogComponent addToWishlistDialogComponent = new AddRestaurantDialogComponent("Add to wishlist");
     private final RestaurantInfoDialogComponent restaurantInfoDialogComponent = new RestaurantInfoDialogComponent();
     private final CheckOffPromptDialogComponent checkOffPromptDialogComponent = new CheckOffPromptDialogComponent();
+    private final NotificationComponent notificationComponent = new NotificationComponent();
 
     private String currentUsername;
 
@@ -64,17 +65,16 @@ public class WishlistView extends VerticalLayout implements BeforeEnterObserver 
         setSizeFull();
         setAlignItems(Alignment.CENTER);
 
-        wishlistGrid.addColumn(RestaurantDisplay::name).setHeader("Name");
-        wishlistGrid.addColumn(RestaurantDisplay::address).setHeader("Address");
-        wishlistGrid.addColumn(RestaurantDisplay::groupName).setHeader("Group");
-        wishlistGrid.setWidthFull();
-        wishlistGrid.getStyle().set("max-width", "720px").set("align-self", "center");
-        wishlistGrid.addItemClickListener(event -> openRestaurantInfoDialog(event.getItem()));
+        wishlistListLayout.setPadding(false);
+        wishlistListLayout.setSpacing(false);
+        wishlistListLayout.setWidthFull();
+        wishlistListLayout.getStyle().set("max-width", "640px");
 
         Button addToWishlistButton = new Button("Add to wishlist", event -> openAddToWishlistDialog());
         addToWishlistButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        addToWishlistButton.setWidthFull();
 
-        VerticalLayout card = new VerticalLayout(new H1("Wishlist"), addToWishlistButton, wishlistGrid);
+        VerticalLayout card = new VerticalLayout(new H1("Wishlist"), addToWishlistButton, wishlistListLayout);
         card.setAlignItems(Alignment.CENTER);
         card.setWidthFull();
 
@@ -90,14 +90,25 @@ public class WishlistView extends VerticalLayout implements BeforeEnterObserver 
     }
 
     private void refreshWishlist() {
-        wishlistGrid.setItems(wishlistController.listWishlistForUser(currentUsername));
+        List<RestaurantDisplay> wishlistItems = wishlistController.listWishlistForUser(currentUsername);
+
+        wishlistListLayout.removeAll();
+        if (wishlistItems.isEmpty()) {
+            wishlistListLayout.add(new Span("Your wishlist is empty."));
+            return;
+        }
+        wishlistItems.forEach(restaurantDisplay -> wishlistListLayout.add(new ListItemComponent(
+                restaurantDisplay.name(),
+                restaurantDisplay.address() + " · " + restaurantDisplay.groupName(),
+                null,
+                () -> openRestaurantInfoDialog(restaurantDisplay)
+        ).asComponent()));
     }
 
     private void openAddToWishlistDialog() {
         List<GroupDisplay> groups = groupController.listGroupsForUser(currentUsername);
         if (groups.isEmpty()) {
-            Notification errorNotification = Notification.show("You need to create a group before adding to the wishlist.");
-            errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            notificationComponent.showError("You need to create a group before adding to the wishlist.");
             getUI().ifPresent(ui -> ui.navigate(RouteConstants.ROUTE_GROUPS));
             return;
         }
@@ -120,12 +131,10 @@ public class WishlistView extends VerticalLayout implements BeforeEnterObserver 
         try {
             wishlistController.addToWishlist(currentUsername, addRestaurantDisplay);
             addToWishlistDialogComponent.close();
-            Notification success = Notification.show("Added to wishlist.");
-            success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+            notificationComponent.showSuccess("Added to wishlist.");
             refreshWishlist();
         } catch (ValidationException e) {
-            Notification errorNotification = Notification.show(e.getMessage());
-            errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            notificationComponent.showError(e.getMessage());
         }
     }
 
@@ -144,8 +153,7 @@ public class WishlistView extends VerticalLayout implements BeforeEnterObserver 
     private void handleCheckOff(RestaurantDisplay restaurantDisplay, boolean rateNow) {
         try {
             wishlistController.checkOffWishlistItem(currentUsername, restaurantDisplay.id());
-            Notification success = Notification.show("Marked as visited.");
-            success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+            notificationComponent.showSuccess("Marked as visited.");
             refreshWishlist();
             if (rateNow) {
                 getUI().ifPresent(ui -> ui.navigate(
@@ -154,8 +162,7 @@ public class WishlistView extends VerticalLayout implements BeforeEnterObserver 
                 ));
             }
         } catch (ValidationException e) {
-            Notification errorNotification = Notification.show(e.getMessage());
-            errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            notificationComponent.showError(e.getMessage());
         }
     }
 }

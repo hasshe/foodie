@@ -7,6 +7,7 @@ import com.hasshe.foodie.dto.ChangePasswordDisplay;
 import com.hasshe.foodie.dto.UpdateProfileDisplay;
 import com.hasshe.foodie.dto.UserIconDisplay;
 import com.hasshe.foodie.exception.ValidationException;
+import com.hasshe.foodie.views.components.NotificationComponent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -14,8 +15,6 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
@@ -48,6 +47,7 @@ public class ProfileView extends VerticalLayout implements BeforeEnterObserver {
     private final PasswordField currentPasswordField = new PasswordField("Current password");
     private final PasswordField newPasswordField = new PasswordField("New password");
     private final PasswordField confirmNewPasswordField = new PasswordField("Confirm new password");
+    private final NotificationComponent notificationComponent = new NotificationComponent();
 
     private String currentUsername;
 
@@ -150,7 +150,7 @@ public class ProfileView extends VerticalLayout implements BeforeEnterObserver {
 
     private void saveProfile() {
         if (usernameField.isEmpty() || displayNameField.isEmpty()) {
-            Notification.show("Please fill in all fields.");
+            notificationComponent.showInfo("Please fill in all fields.");
             return;
         }
 
@@ -165,16 +165,14 @@ public class ProfileView extends VerticalLayout implements BeforeEnterObserver {
             ));
 
             if (usernameChanged) {
-                Notification.show("Username changed. Please log in again.");
+                notificationComponent.showInfo("Username changed. Please log in again.");
                 authenticationContext.logout();
             } else {
-                Notification success = Notification.show("Profile updated.");
-                success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                notificationComponent.showSuccess("Profile updated.");
                 findMainLayout().ifPresent(MainLayout::refreshProfileIcon);
             }
         } catch (ValidationException e) {
-            Notification errorNotification = Notification.show(e.getMessage());
-            errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            notificationComponent.showError(e.getMessage());
         }
     }
 
@@ -192,15 +190,15 @@ public class ProfileView extends VerticalLayout implements BeforeEnterObserver {
 
     private void changePassword() {
         if (currentPasswordField.isEmpty() || newPasswordField.isEmpty() || confirmNewPasswordField.isEmpty()) {
-            Notification.show("Please fill in all password fields.");
+            notificationComponent.showInfo("Please fill in all password fields.");
             return;
         }
         if (!newPasswordField.getValue().equals(confirmNewPasswordField.getValue())) {
-            Notification.show("New passwords do not match.");
+            notificationComponent.showInfo("New passwords do not match.");
             return;
         }
         if (newPasswordField.getValue().length() < UserConstants.PASSWORD_MIN_LENGTH) {
-            Notification.show("Password must be at least " + UserConstants.PASSWORD_MIN_LENGTH + " characters.");
+            notificationComponent.showInfo("Password must be at least " + UserConstants.PASSWORD_MIN_LENGTH + " characters.");
             return;
         }
 
@@ -209,11 +207,10 @@ public class ProfileView extends VerticalLayout implements BeforeEnterObserver {
                     currentPasswordField.getValue(),
                     newPasswordField.getValue()
             ));
-            Notification.show("Password changed. Please log in again.");
+            notificationComponent.showInfo("Password changed. Please log in again.");
             authenticationContext.logout();
         } catch (ValidationException e) {
-            Notification errorNotification = Notification.show(e.getMessage());
-            errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            notificationComponent.showError(e.getMessage());
         }
     }
 }

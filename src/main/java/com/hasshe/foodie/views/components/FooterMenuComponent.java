@@ -31,7 +31,7 @@ public class FooterMenuComponent extends HorizontalLayout {
                 createNavItem(VaadinIcon.CUTLERY, "Restaurants", RestaurantsView.class),
                 createNavItem(VaadinIcon.USERS, "Groups", GroupsView.class),
                 createNavItem(VaadinIcon.STAR, "Wishlist", WishlistView.class),
-                createNavItem(VaadinIcon.LIST, "FoodList", FoodListView.class),
+                createNavItem(VaadinIcon.LIST, "Foodlist", FoodListView.class),
                 createProfileNavItem()
         );
     }

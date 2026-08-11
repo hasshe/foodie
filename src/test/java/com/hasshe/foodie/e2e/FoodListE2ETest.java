@@ -52,9 +52,38 @@ class FoodListE2ETest extends AbstractFoodieE2ETest {
         assertThat(page.getByText("No food items to compare yet.", new Page.GetByTextOptions().setExact(false))).isVisible();
     }
 
+    @Test
+    void given_multipleQualifyingTypes_when_filteringByType_then_onlySelectedTypeIsShown() {
+        registerAndLogin("foodlistuser4");
+        createGroup("Foodies");
+        addRestaurant("The Diner", "123 Main St");
+        addFoodItem("The Diner", "Ribeye Steak", "Steak");
+        addFoodItem("The Diner", "Caesar Salad", "Salad");
+        addRestaurant("Steakhouse", "456 Oak Ave");
+        addFoodItem("Steakhouse", "Filet Mignon", "Steak");
+        addFoodItem("Steakhouse", "Greek Salad", "Salad");
+
+        goToFoodList();
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Steak"))).isVisible();
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Salad"))).isVisible();
+
+        filterByType("Steak");
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Steak"))).isVisible();
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Salad"))).not().isVisible();
+
+        filterByType("All types");
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Steak"))).isVisible();
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Salad"))).isVisible();
+    }
+
+    private void filterByType(String type) {
+        page.getByLabel("Filter by type").click();
+        page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName(type)).click();
+    }
+
     private void addFoodItem(String restaurantName, String foodItemName, String dishCategory) {
         goToRestaurants();
-        page.locator("vaadin-grid").getByText(restaurantName).click();
+        page.locator(".list-item").getByText(restaurantName).click();
         assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName(restaurantName))).isVisible();
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Food items")).click();
 
@@ -67,7 +96,7 @@ class FoodListE2ETest extends AbstractFoodieE2ETest {
     }
 
     private void goToFoodList() {
-        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("FoodList")).click();
-        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("FoodList"))).isVisible();
+        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Foodlist")).click();
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Foodlist"))).isVisible();
     }
 }

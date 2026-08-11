@@ -52,9 +52,9 @@ class NavigationE2ETest extends AbstractFoodieE2ETest {
 
     @Test
     void given_loggedInUserWithNoComparableFoodItems_when_clickingFoodList_then_navigatesThereAndShowsEmptyState() {
-        footerLink("FoodList").click();
+        footerLink("Foodlist").click();
 
-        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("FoodList"))).isVisible();
+        assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Foodlist"))).isVisible();
         assertThat(page.getByText("No food items to compare yet.", new Page.GetByTextOptions().setExact(false))).isVisible();
         assertThat(footerLink("Profile")).isVisible();
     }

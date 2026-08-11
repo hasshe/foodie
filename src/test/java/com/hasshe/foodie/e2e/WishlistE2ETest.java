@@ -16,7 +16,7 @@ class WishlistE2ETest extends AbstractFoodieE2ETest {
         goToWishlist();
         addToWishlistWithDetails("The Diner", "123 Main St", "American", "https://thediner.example");
 
-        page.locator("vaadin-grid").getByText("The Diner").click();
+        page.locator(".list-item").getByText("The Diner").click();
 
         Locator dialogOverlay = page.locator("vaadin-dialog-overlay");
         assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("The Diner"))).isVisible();
@@ -58,7 +58,7 @@ class WishlistE2ETest extends AbstractFoodieE2ETest {
         assertThat(page.getByText("The Diner")).isVisible();
 
         goToRestaurants();
-        assertThat(page.locator("vaadin-grid").getByText("The Diner")).not().isVisible();
+        assertThat(page.locator(".list-item").getByText("The Diner")).not().isVisible();
     }
 
     @Test
@@ -85,11 +85,11 @@ class WishlistE2ETest extends AbstractFoodieE2ETest {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Rate later")).click();
 
         assertThat(page.getByText("Marked as visited.")).isVisible();
-        assertThat(page.locator("vaadin-grid").getByText("The Diner")).not().isVisible();
+        assertThat(page.locator(".list-item").getByText("The Diner")).not().isVisible();
         assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Wishlist"))).isVisible();
 
         goToRestaurants();
-        assertThat(page.locator("vaadin-grid").getByText("The Diner")).isVisible();
+        assertThat(page.locator(".list-item").getByText("The Diner")).isVisible();
     }
 
     @Test
@@ -120,7 +120,7 @@ class WishlistE2ETest extends AbstractFoodieE2ETest {
         openWishlistItem("The Diner");
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Close")).click();
 
-        assertThat(page.locator("vaadin-grid").getByText("The Diner")).isVisible();
+        assertThat(page.locator(".list-item").getByText("The Diner")).isVisible();
     }
 
     private void addToWishlist(String name, String address) {
@@ -132,7 +132,7 @@ class WishlistE2ETest extends AbstractFoodieE2ETest {
     }
 
     private void openWishlistItem(String name) {
-        page.locator("vaadin-grid").getByText(name).click();
+        page.locator(".list-item").getByText(name).click();
         assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName(name))).isVisible();
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Check off")).click();
     }

@@ -12,9 +12,8 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
+import com.hasshe.foodie.views.components.NotificationComponent;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -41,6 +40,7 @@ public class GroupsView extends VerticalLayout implements BeforeEnterObserver {
 
     private final TextField groupNameField = new TextField("Group name");
     private final VerticalLayout groupListLayout = new VerticalLayout();
+    private final NotificationComponent notificationComponent = new NotificationComponent();
 
     private String currentUsername;
     private Long defaultGroupId;
@@ -131,21 +131,19 @@ public class GroupsView extends VerticalLayout implements BeforeEnterObserver {
 
     private void createGroup() {
         if (groupNameField.isEmpty()) {
-            Notification.show("Please enter a group name.");
+            notificationComponent.showInfo("Please enter a group name.");
             return;
         }
 
         groupController.createGroup(currentUsername, new CreateGroupDisplay(groupNameField.getValue()));
         groupNameField.clear();
-        Notification success = Notification.show("Group created.");
-        success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+        notificationComponent.showSuccess("Group created.");
         refreshGroups();
     }
 
     private void setDefaultGroup(Long groupId) {
         profileController.setDefaultGroup(currentUsername, groupId);
-        Notification success = Notification.show("Default group updated.");
-        success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+        notificationComponent.showSuccess("Default group updated.");
         refreshGroups();
     }
 }

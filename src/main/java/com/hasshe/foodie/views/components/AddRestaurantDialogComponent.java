@@ -6,7 +6,6 @@ import com.hasshe.foodie.dto.GroupDisplay;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
@@ -27,6 +26,7 @@ public class AddRestaurantDialogComponent {
     private final TextField cuisineTypeField = new TextField("Cuisine type");
     private final TextField websiteField = new TextField("Website");
     private final Select<GroupDisplay> groupSelect = new Select<>();
+    private final NotificationComponent notificationComponent = new NotificationComponent();
 
     private SubmitListener submitListener = addRestaurantDisplay -> {};
 
@@ -93,7 +93,7 @@ public class AddRestaurantDialogComponent {
 
     private void handleSave() {
         if (nameField.isEmpty() || addressField.isEmpty() || groupSelect.isEmpty()) {
-            Notification.show("Please fill in the required fields.");
+            notificationComponent.showInfo("Please fill in the required fields.");
             return;
         }
 

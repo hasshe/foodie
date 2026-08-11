@@ -21,16 +21,15 @@ import com.hasshe.foodie.exception.ValidationException;
 import com.hasshe.foodie.views.components.AddRestaurantDialogComponent;
 import com.hasshe.foodie.views.components.FoodItemListDialogComponent;
 import com.hasshe.foodie.views.components.FoodItemRatingDialogComponent;
+import com.hasshe.foodie.views.components.ListItemComponent;
+import com.hasshe.foodie.views.components.NotificationComponent;
 import com.hasshe.foodie.views.components.RatingFormatter;
 import com.hasshe.foodie.views.components.RestaurantInfoDialogComponent;
 import com.hasshe.foodie.views.components.RestaurantRatingDialogComponent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
@@ -43,6 +42,7 @@ import jakarta.annotation.security.PermitAll;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Route(value = RouteConstants.ROUTE_RESTAURANTS, layout = MainLayout.class)
@@ -61,8 +61,9 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
     private final AuthenticationContext authenticationContext;
 
     private final RatingFormatter ratingFormatter = new RatingFormatter();
+    private final NotificationComponent notificationComponent = new NotificationComponent();
 
-    private final Grid<RestaurantDisplay> restaurantGrid = new Grid<>(RestaurantDisplay.class, false);
+    private final VerticalLayout restaurantListLayout = new VerticalLayout();
     private final Select<String> groupFilterSelect = new Select<>();
 
     private final AddRestaurantDialogComponent addRestaurantDialogComponent = new AddRestaurantDialogComponent("Add restaurant");
@@ -72,6 +73,7 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
     private final FoodItemRatingDialogComponent foodItemRatingDialogComponent = new FoodItemRatingDialogComponent();
 
     private String currentUsername;
+    private List<RestaurantDisplay> allRestaurants = List.of();
 
     public RestaurantsView(
             RestaurantController restaurantController,
@@ -93,22 +95,20 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
         setSizeFull();
         setAlignItems(Alignment.CENTER);
 
-        restaurantGrid.addColumn(RestaurantDisplay::name).setHeader("Name");
-        Grid.Column<RestaurantDisplay> ratingColumn = restaurantGrid.addColumn(this::formatAverageRating).setHeader("Rating");
-        ratingColumn.setComparator(RestaurantDisplay::averageRating);
-        restaurantGrid.setWidthFull();
-        restaurantGrid.getStyle().set("max-width", "640px").set("align-self", "center");
-        restaurantGrid.addItemClickListener(event -> openRestaurantInfoDialog(event.getItem()));
-        restaurantGrid.sort(GridSortOrder.desc(ratingColumn).build());
+        restaurantListLayout.setPadding(false);
+        restaurantListLayout.setSpacing(false);
+        restaurantListLayout.setWidthFull();
+        restaurantListLayout.getStyle().set("max-width", "640px");
 
         groupFilterSelect.setLabel("Filter by group");
-        groupFilterSelect.setWidth("320px");
-        groupFilterSelect.addValueChangeListener(event -> applyGroupFilter());
+        groupFilterSelect.setWidthFull();
+        groupFilterSelect.addValueChangeListener(event -> renderRestaurantList());
 
         Button addRestaurantButton = new Button("Add restaurant", event -> openAddRestaurantDialog());
         addRestaurantButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        addRestaurantButton.setWidthFull();
 
-        VerticalLayout card = new VerticalLayout(new H1("Restaurants"), addRestaurantButton, groupFilterSelect, restaurantGrid);
+        VerticalLayout card = new VerticalLayout(new H1("Restaurants"), addRestaurantButton, groupFilterSelect, restaurantListLayout);
         card.setAlignItems(Alignment.CENTER);
         card.setWidthFull();
 
@@ -125,9 +125,11 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
     }
 
     private void refreshRestaurants() {
-        restaurantGrid.setItems(restaurantController.listRestaurantsForUser(currentUsername));
+        allRestaurants = restaurantController.listRestaurantsForUser(currentUsername).stream()
+                .sorted(Comparator.comparingDouble(RestaurantDisplay::averageRating).reversed())
+                .toList();
         refreshGroupFilterOptions();
-        applyGroupFilter();
+        renderRestaurantList();
     }
 
     private void refreshGroupFilterOptions() {
@@ -145,13 +147,23 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
         groupFilterSelect.setValue(items.contains(previousValue) ? previousValue : ALL_GROUPS_LABEL);
     }
 
-    private void applyGroupFilter() {
+    private void renderRestaurantList() {
         String selectedGroupName = groupFilterSelect.getValue();
-        if (selectedGroupName == null || selectedGroupName.equals(ALL_GROUPS_LABEL)) {
-            restaurantGrid.getListDataView().removeFilters();
-        } else {
-            restaurantGrid.getListDataView().setFilter(restaurantDisplay -> restaurantDisplay.groupName().equals(selectedGroupName));
+        List<RestaurantDisplay> visibleRestaurants = (selectedGroupName == null || selectedGroupName.equals(ALL_GROUPS_LABEL))
+                ? allRestaurants
+                : allRestaurants.stream().filter(restaurantDisplay -> restaurantDisplay.groupName().equals(selectedGroupName)).toList();
+
+        restaurantListLayout.removeAll();
+        if (visibleRestaurants.isEmpty()) {
+            restaurantListLayout.add(new Span("No restaurants yet."));
+            return;
         }
+        visibleRestaurants.forEach(restaurantDisplay -> restaurantListLayout.add(new ListItemComponent(
+                restaurantDisplay.name(),
+                restaurantDisplay.address() + " · " + restaurantDisplay.groupName(),
+                formatAverageRating(restaurantDisplay),
+                () -> openRestaurantInfoDialog(restaurantDisplay)
+        ).asComponent()));
     }
 
     private void openRatingDialogFromQueryParameter(BeforeEnterEvent event) {
@@ -160,7 +172,7 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
                 .stream()
                 .findFirst()
                 .map(Long::valueOf)
-                .flatMap(restaurantId -> restaurantGrid.getListDataView().getItems()
+                .flatMap(restaurantId -> allRestaurants.stream()
                         .filter(restaurantDisplay -> restaurantDisplay.id().equals(restaurantId))
                         .findFirst())
                 .ifPresent(this::openRatingDialog);
@@ -169,8 +181,7 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
     private void openAddRestaurantDialog() {
         List<GroupDisplay> groups = groupController.listGroupsForUser(currentUsername);
         if (groups.isEmpty()) {
-            Notification errorNotification = Notification.show("You need to create a group before adding a restaurant.");
-            errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            notificationComponent.showError("You need to create a group before adding a restaurant.");
             getUI().ifPresent(ui -> ui.navigate(RouteConstants.ROUTE_GROUPS));
             return;
         }
@@ -193,12 +204,10 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
         try {
             restaurantController.addRestaurant(currentUsername, addRestaurantDisplay);
             addRestaurantDialogComponent.close();
-            Notification success = Notification.show("Restaurant added.");
-            success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+            notificationComponent.showSuccess("Restaurant added.");
             refreshRestaurants();
         } catch (ValidationException e) {
-            Notification errorNotification = Notification.show(e.getMessage());
-            errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            notificationComponent.showError(e.getMessage());
         }
     }
 
@@ -225,11 +234,9 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
             RestaurantRatingSummaryDisplay updatedSummary = restaurantRatingController.getRatingSummary(currentUsername, restaurantId);
             restaurantRatingDialogComponent.refresh(updatedSummary);
             refreshRestaurants();
-            Notification success = Notification.show("Rating saved.");
-            success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+            notificationComponent.showSuccess("Rating saved.");
         } catch (ValidationException e) {
-            Notification errorNotification = Notification.show(e.getMessage());
-            errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            notificationComponent.showError(e.getMessage());
         }
     }
 
@@ -248,11 +255,9 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
             foodItemRatingController.rateFoodItem(currentUsername, addedFoodItem.id(), rateFoodItemDisplay);
             List<FoodItemDisplay> updatedFoodItems = foodItemController.listFoodItemsForRestaurant(currentUsername, restaurantId);
             foodItemListDialogComponent.refresh(updatedFoodItems);
-            Notification success = Notification.show("Food item added.");
-            success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+            notificationComponent.showSuccess("Food item added.");
         } catch (ValidationException e) {
-            Notification errorNotification = Notification.show(e.getMessage());
-            errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            notificationComponent.showError(e.getMessage());
         }
     }
 
@@ -271,11 +276,9 @@ public class RestaurantsView extends VerticalLayout implements BeforeEnterObserv
             foodItemRatingController.rateFoodItem(currentUsername, foodItemId, rateFoodItemDisplay);
             FoodItemRatingSummaryDisplay updatedSummary = foodItemRatingController.getRatingSummary(currentUsername, foodItemId);
             foodItemRatingDialogComponent.refresh(updatedSummary);
-            Notification success = Notification.show("Rating saved.");
-            success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+            notificationComponent.showSuccess("Rating saved.");
         } catch (ValidationException e) {
-            Notification errorNotification = Notification.show(e.getMessage());
-            errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            notificationComponent.showError(e.getMessage());
         }
     }
 

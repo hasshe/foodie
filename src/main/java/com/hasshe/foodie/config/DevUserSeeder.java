@@ -66,28 +66,41 @@ class DevUserSeeder implements ApplicationRunner {
 
         RestaurantDomain theDiner = restaurantService.addRestaurant(DEMO_USERNAME, new AddRestaurantDisplay(
                 "The Diner", "123 Main St", "American", "https://thediner.example", null, foodies.id()));
-        restaurantService.addRestaurant(DEMO_USERNAME, new AddRestaurantDisplay(
+        RestaurantDomain pizzaPlace = restaurantService.addRestaurant(DEMO_USERNAME, new AddRestaurantDisplay(
                 "Pizza Place", "456 Oak Ave", "Italian", null, null, foodies.id()));
-        restaurantService.addRestaurant(DEMO_USERNAME, new AddRestaurantDisplay(
+        RestaurantDomain sushiSpot = restaurantService.addRestaurant(DEMO_USERNAME, new AddRestaurantDisplay(
                 "Sushi Spot", "789 Pine Rd", "Japanese", null, null, weekendWarriors.id()));
 
         log.info("Seeded 2 sample groups and 3 sample restaurants for username {}", DEMO_USERNAME);
 
-        seedSampleFoodItems(theDiner.id());
-        seedSampleWishlistItem(weekendWarriors.id());
+        seedSampleFoodItems(theDiner.id(), pizzaPlace.id(), sushiSpot.id());
+        seedSampleWishlistItems(foodies.id(), weekendWarriors.id());
     }
 
-    private void seedSampleFoodItems(Long restaurantId) {
-        foodItemService.addFoodItem(DEMO_USERNAME, restaurantId, new AddFoodItemDisplay("Ribeye Steak", "Steak"));
-        foodItemService.addFoodItem(DEMO_USERNAME, restaurantId, new AddFoodItemDisplay("Caesar Salad", "Salad"));
+    private void seedSampleFoodItems(Long theDinerId, Long pizzaPlaceId, Long sushiSpotId) {
+        foodItemService.addFoodItem(DEMO_USERNAME, theDinerId, new AddFoodItemDisplay("Ribeye Steak", "Steak"));
+        foodItemService.addFoodItem(DEMO_USERNAME, theDinerId, new AddFoodItemDisplay("Caesar Salad", "Salad"));
+        foodItemService.addFoodItem(DEMO_USERNAME, theDinerId, new AddFoodItemDisplay("Mozzarella Sticks", "Appetizer"));
 
-        log.info("Seeded 2 sample food items for restaurant id {}", restaurantId);
+        foodItemService.addFoodItem(DEMO_USERNAME, pizzaPlaceId, new AddFoodItemDisplay("Margherita Pizza", "Pizza"));
+        foodItemService.addFoodItem(DEMO_USERNAME, pizzaPlaceId, new AddFoodItemDisplay("Caesar Salad", "Salad"));
+        foodItemService.addFoodItem(DEMO_USERNAME, pizzaPlaceId, new AddFoodItemDisplay("Garlic Knots", "Appetizer"));
+
+        foodItemService.addFoodItem(DEMO_USERNAME, sushiSpotId, new AddFoodItemDisplay("California Roll", "Sushi"));
+        foodItemService.addFoodItem(DEMO_USERNAME, sushiSpotId, new AddFoodItemDisplay("Miso Soup", "Soup"));
+        foodItemService.addFoodItem(DEMO_USERNAME, sushiSpotId, new AddFoodItemDisplay("Edamame", "Appetizer"));
+
+        log.info("Seeded 9 sample food items across 3 restaurants for username {}", DEMO_USERNAME);
     }
 
-    private void seedSampleWishlistItem(Long groupId) {
+    private void seedSampleWishlistItems(Long foodiesGroupId, Long weekendWarriorsGroupId) {
         wishlistService.addToWishlist(DEMO_USERNAME, new AddRestaurantDisplay(
-                "Taco Truck", "321 Elm St", "Mexican", null, null, groupId));
+                "Taco Truck", "321 Elm St", "Mexican", null, null, weekendWarriorsGroupId));
+        wishlistService.addToWishlist(DEMO_USERNAME, new AddRestaurantDisplay(
+                "Ramen House", "654 Cedar Blvd", "Japanese", null, null, weekendWarriorsGroupId));
+        wishlistService.addToWishlist(DEMO_USERNAME, new AddRestaurantDisplay(
+                "Burger Barn", "987 Birch Ln", "American", "https://burgerbarn.example", null, foodiesGroupId));
 
-        log.info("Seeded 1 sample wishlist item for username {}", DEMO_USERNAME);
+        log.info("Seeded 3 sample wishlist items for username {}", DEMO_USERNAME);
     }
 }

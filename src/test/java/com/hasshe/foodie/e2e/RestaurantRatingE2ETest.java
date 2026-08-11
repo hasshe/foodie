@@ -15,7 +15,7 @@ class RestaurantRatingE2ETest extends AbstractFoodieE2ETest {
         createGroup("Foodies");
         addRestaurantWithDetails("The Diner", "123 Main St", "American", "https://thediner.example");
 
-        page.locator("vaadin-grid").getByText("The Diner").click();
+        page.locator(".list-item").getByText("The Diner").click();
 
         Locator dialogOverlay = page.locator("vaadin-dialog-overlay");
         assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("The Diner"))).isVisible();
@@ -101,7 +101,7 @@ class RestaurantRatingE2ETest extends AbstractFoodieE2ETest {
     }
 
     @Test
-    void given_ratingSavedAndDialogClosed_when_viewingGridBehindDialog_then_gridShowsUpdatedRatingImmediately() {
+    void given_ratingSavedAndDialogClosed_when_viewingListBehindDialog_then_listShowsUpdatedRatingImmediately() {
         registerAndLogin("rateuser5");
         createGroup("Foodies");
         addRestaurant("The Diner", "123 Main St");
@@ -111,7 +111,7 @@ class RestaurantRatingE2ETest extends AbstractFoodieE2ETest {
         assertThat(page.getByText("Rating saved.")).isVisible();
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Close")).click();
 
-        assertThat(page.getByRole(AriaRole.GRIDCELL, new Page.GetByRoleOptions().setName("50.0"))).isVisible();
+        assertThat(page.locator(".list-item").getByText("50.0")).isVisible();
     }
 
     @Test
@@ -132,7 +132,7 @@ class RestaurantRatingE2ETest extends AbstractFoodieE2ETest {
 
         assertThat(page.getByText("Food item added.")).isVisible();
         assertThat(page.getByText("Ribeye Steak")).isVisible();
-        assertThat(page.getByRole(AriaRole.GRIDCELL, new Page.GetByRoleOptions().setName("50.0"))).isVisible();
+        assertThat(page.locator("vaadin-dialog-overlay").locator(".list-item").getByText("50.0")).isVisible();
     }
 
     @Test
@@ -161,7 +161,7 @@ class RestaurantRatingE2ETest extends AbstractFoodieE2ETest {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add food item")).click();
         assertThat(page.getByText("Food item added.")).isVisible();
 
-        page.locator("vaadin-grid").getByText("Ribeye Steak").click();
+        page.locator(".list-item").getByText("Ribeye Steak").click();
         assertThat(page.getByText("Ratings submitted")).isVisible();
         assertThat(page.getByText("1", new Page.GetByTextOptions().setExact(true))).isVisible();
         assertThat(page.locator("input[type=range]:visible").nth(0)).hasValue("95");
@@ -180,13 +180,13 @@ class RestaurantRatingE2ETest extends AbstractFoodieE2ETest {
     }
 
     private void openRestaurant(String name) {
-        page.locator("vaadin-grid").getByText(name).click();
+        page.locator(".list-item").getByText(name).click();
         assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName(name))).isVisible();
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Rate restaurant")).click();
     }
 
     private void openRestaurantFoodItems(String name) {
-        page.locator("vaadin-grid").getByText(name).click();
+        page.locator(".list-item").getByText(name).click();
         assertThat(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName(name))).isVisible();
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Food items")).click();
     }
